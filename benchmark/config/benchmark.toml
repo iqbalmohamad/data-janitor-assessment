@@ -43,3 +43,39 @@ orders = 2000
 order_items = 6000
 payments = 1900
 returns = 120
+
+[scenario]
+audit_period = "2026-08"
+board_snapshot_at = "2026-09-02T08:15:00+07:00"
+finance_close_at = "2026-09-07T17:30:00+07:00"
+observation_at = "2026-09-08T09:00:00+07:00"
+sales_complete_at = "2026-09-01T02:10:00+07:00"
+credit_batch_start_at = "2026-09-02T14:00:00+07:00"
+credit_batch_end_at = "2026-09-04T17:00:00+07:00"
+credit_batch_business_days = [2, 3, 4]
+board_business_day = 2
+close_business_day = 5
+vat_rate = 0.11
+posting_lag_weights = [0.55, 0.25, 0.12, 0.08]
+cancelled_rate = 0.03
+freight_rate = 0.40
+return_quantity_fraction = 0.50
+backdated_return_share = 0.50
+august_cost_change_share = 0.20
+standard_cost_price_ratio = 0.76
+actual_cost_ratios = [1.04, 0.96, 0.96, 0.96, 0.96]
+actual_change_ratio = 0.94
+actual_change_step = 0.01
+month_end_deliveries = 2
+month_end_delivery_share = 0.04
+
+[materiality]
+credit_rnmr_min = 0.025
+credit_rnmr_max = 0.040
+late_credit_share_min = 0.35
+period_leg_rnmr_min = 0.008
+cost_difference_min = 0.01
+pairwise_revenue_rnmr_min = 0.005
+pairwise_margin_pct_min = 0.005
+finance_margin_min = 0.15
+finance_margin_max = 0.25
