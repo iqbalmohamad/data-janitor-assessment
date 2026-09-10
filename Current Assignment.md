@@ -1,6 +1,8 @@
 # Current Assignment — M0: Reporting Reliability Demo Environment
 
-**Status:** Defined — ready for implementation
+**Status:** Scenario Design Gate PASSED — ready for M0 implementation
+authorization (Scenario Contract in `benchmark/README.md`, Part II, is
+approved and final; implementation not yet started)
 **Milestone:** M0 (revised)
 **Assignment owner:** Technical Lead
 **Canonical seed:** `20260910`
@@ -11,6 +13,15 @@
 > 2026-09-10, §AH). Nothing from the prior assignment survives except where
 > this document explicitly says so. If you have the prior assignment open,
 > discard it.
+
+> **Process gate.** The M0 scenario is fixed by the Scenario Contract
+> (`benchmark/README.md`, Part II, sections SC-1 to SC-18). The agreed
+> sequence is: Scenario Contract → Scenario Design Gate → M0 implementation
+> authorization. The Scenario Design Gate has **PASSED** (Product Manager /
+> Technical Lead review, criteria A–H). M0 implementation work (generator,
+> schema, surfaces, sample report) is authorized to begin on a fresh branch
+> created from `main` after the Scenario Contract PR merges; it is not part
+> of that PR.
 
 ---
 
@@ -47,9 +58,11 @@ framework.
    both (2026-09-10).
 2. `Current Assignment.md` (this document) — canonical bounded engineering
    assignment for the revised M0.
-3. `benchmark/README.md` — Northstar demo-environment architecture:
-   schema, the reconciliation scenario, ground-truth format, sample-report
-   structure. Subordinate to this document.
+3. `benchmark/README.md` — Northstar demo-environment architecture and
+   the binding **Scenario Contract** (Part II): the August 2026
+   Finance/Sales/Board scenario, lifecycle and timestamp model, reporting
+   surfaces, required decomposition, evidence inventory, ground-truth
+   format, sample-report implications. Subordinate to this document.
 4. `benchmark/config/benchmark.toml` — canonical generation configuration.
 
 ## 4. Scope
@@ -59,29 +72,33 @@ M0 delivers, in this order:
 1. **Demo environment** — a PostgreSQL schema for Northstar Distribution
    (canonical environment per Amendment §O), generated deterministically
    from code + config + the canonical seed, containing:
-   - core operational data (customers, products, orders, order_items,
-     payments, returns, plus one legacy/superseded customer table);
-   - at least three reporting surfaces that compute Revenue/Margin
-     differently from the same underlying activity (a Finance extract, a
-     Management/board query, a Sales dashboard view);
+   - core operational data following the lifecycle model fixed in the
+     Scenario Contract (customers, products, product cost history, orders,
+     order_items, invoices, invoice_lines, payments, returns, return_items,
+     credit_notes — `benchmark/README.md` §SC-7);
+   - three reporting surfaces that compute Revenue/Margin differently from
+     the same underlying activity (the Finance P&L extract, the Sales
+     dashboard view, the Management/Board KPI snapshot — §SC-9);
    - fragmented, realistic evidentiary artifacts (table/column comments,
      a job/run log, an ad hoc CSV export, informal ownership notes) rather
      than one tidy metadata registry table — per Amendment §N.
-2. **Reconciliation scenario** — one realistic Revenue+Margin dispute
-   (optionally with a third KPI) arising from plausible mechanisms (order
-   status inclusion, invoice vs. order date, returns, discounts, tax,
-   shipping, late-arriving transactions, cancellations, grain, restatement
-   timing) — not arbitrary wrong numbers.
+2. **Reconciliation scenario** — the August 2026 Revenue + Gross Margin
+   dispute fixed by the Scenario Contract: Finance and Sales are each
+   defensible for their own decision context; the Board pack carries the
+   actual hybrid defect; the differences decompose into definition, timing,
+   cost-basis, and defect components (§SC-10) — not arbitrary wrong
+   numbers.
 3. **Hidden ground truth** — a machine-readable manifest of the intended
    underlying business truth, which surfaces differ and why, the specific
    planted mechanisms, and the expected reconciliation result. Lives in
    `benchmark/ground_truth/`, structurally separate from assessment inputs,
    never read by the future assessment workflow.
-4. **A small number of supporting findings** outside metric consistency,
-   only if they materially improve realism (e.g., a freshness gap affecting
-   one surface, a duplicate/missing transaction, one limited synthetic-PII
-   example for the secondary regulatory hypothesis). These remain supporting
-   evidence — they do not reopen the full six-dimension scope.
+4. **Two supporting findings** outside metric consistency, both tied to
+   the dispute (§SC-11): the freshness/snapshot gap between the Board pack
+   and the Finance close, and the unowned, undocumented Board-pack
+   definition of Revenue. **No PII scenario is included in M0.** These
+   remain supporting evidence — they do not reopen the full six-dimension
+   scope.
 5. **One presentable sample Reporting Reliability Audit** — the primary M0
    output (Amendment §U). Demonstrates the complete value chain end to end,
    readable by a CFO/COO, with evidence a Head of Data could verify. This
@@ -129,7 +146,8 @@ M0 implementation touches only:
 benchmark/generate.py          # new — deterministic generator targeting PostgreSQL
 benchmark/load_duckdb.py       # new — optional dev/test mirror into DuckDB (§O)
 benchmark/config/benchmark.toml# may be tuned (row counts, scenario params)
-benchmark/README.md            # updated if implementation refines the design
+benchmark/scenario/            # new — surface SQL and note/extract sources fixed by the Scenario Contract
+benchmark/README.md            # updated if implementation refines the design (within the Scenario Contract)
 benchmark/ground_truth/        # generated output (gitignored)
 report/samples/                # new — the one sample Reporting Reliability Audit
 tests/…                        # new tests per §9
@@ -164,9 +182,9 @@ Full architecture: `benchmark/README.md`. Binding requirements:
   "demo" scale profile (order of 10⁴ customers, 10⁵–10⁶ orders, low-millions
   order_items, ~3 years of history) may coexist with a smaller "smoke" scale
   profile used for fast tests. Exact counts are not a success criterion.
-- **Synthetic PII only**, where present at all — the secondary regulatory
-  hypothesis (Amendment §L) permits at most one limited, clearly synthetic
-  PII example; it is not a general PII-hygiene catalog.
+- **No PII scenario.** M0 plants no privacy finding and contains no
+  natural-person data (§SC-16). The secondary regulatory hypothesis
+  (Amendment §L) is tested commercially, not in this demonstration.
 
 ## 8. Ground-truth requirements
 
@@ -288,9 +306,11 @@ should:
 
 1. Read this document, then `benchmark/README.md`, then
    `benchmark/config/benchmark.toml`.
-2. Design the reconciliation scenario first (§4.2) — the specific
-   mechanism(s) causing Revenue/Margin to disagree — before writing any
-   generator code. The scenario is the point; the data volume is not.
+2. Do **not** redesign the reconciliation scenario: it is fixed by the
+   Scenario Contract (§4.2, `benchmark/README.md` Part II) and approved at
+   the Scenario Design Gate. Implement it as written; raise any needed
+   change through the gate. The scenario is the point; the data volume is
+   not.
 3. Implement `benchmark/generate.py` against that design: operational data
    first, the three reporting-surface artifacts second (each computing its
    own figure from the operational data via its own logic — never a

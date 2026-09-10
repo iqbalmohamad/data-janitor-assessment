@@ -3,9 +3,10 @@ baseline, per SPEC.md Amendment 001).
 
 These tests pin the invariants the revised M0 assignment declares
 canonical: the seed, the PostgreSQL-as-canonical / DuckDB-as-internal
-environment split, and the two scale profiles. The M0 implementation adds
-generator/output/reconciliation tests beside this file (see
-"Current Assignment.md" section 10).
+environment split, the canonical schema set, and the two scale profiles.
+The scenario itself is fixed by the Scenario Contract (benchmark/README.md,
+Part II); the M0 implementation adds generator/output/reconciliation tests
+beside this file (see "Current Assignment.md" section 10).
 """
 
 import tomllib
@@ -17,13 +18,12 @@ CONFIG_PATH = REPO_ROOT / "benchmark" / "config" / "benchmark.toml"
 
 CANONICAL_SEED = 20260910
 
-# Operational tables required by the revised scenario (Current Assignment.md
-# section 4.1 / benchmark/README.md section 6). Note: this is deliberately
-# not a six-dimension dataset list -- the revised M0 needs only what the
-# Revenue/Margin reconciliation scenario requires.
-REQUIRED_OPERATIONAL_TABLES = {
+# Independently generated core tables that carry configured row counts
+# (benchmark/README.md, Scenario Contract SC-7 / SC-14). The remaining
+# lifecycle tables (invoices, invoice_lines, return_items, credit_notes,
+# product_cost_history) are derived from these and carry no counts.
+CONFIGURED_SCALE_TABLES = {
     "customers",
-    "customer_master_legacy",
     "products",
     "orders",
     "order_items",
@@ -31,11 +31,8 @@ REQUIRED_OPERATIONAL_TABLES = {
     "returns",
 }
 
-REQUIRED_REPORTING_SURFACES = {
-    "finance_monthly_report",
-    "mgmt_board_kpis",
-    "sales_dashboard_kpis",
-}
+# Canonical PostgreSQL schema set (Scenario Contract SC-7 / SC-9).
+CANONICAL_SCHEMAS = {"core", "finance", "analytics", "management"}
 
 REQUIRED_SCALE_PROFILES = {"demo", "smoke"}
 
@@ -80,6 +77,7 @@ def test_postgresql_is_canonical_with_no_hardcoded_credentials():
     for key, value in pg.items():
         if isinstance(value, str):
             assert "://" not in value, f"postgresql.{key} looks like a hard-coded connection string"
+    assert set(pg["schemas"]) == CANONICAL_SCHEMAS
 
 
 def test_duckdb_is_marked_as_internal_only():
@@ -106,15 +104,11 @@ def test_smoke_profile_is_smaller_than_demo_profile():
         assert smoke[key] < demo[key], f"smoke.{key} should be smaller than demo.{key}"
 
 
-def test_scale_profiles_cover_required_operational_tables():
+def test_scale_profiles_cover_configured_tables():
     config = load_config()
     for profile_name in REQUIRED_SCALE_PROFILES:
         profile = config["scale"][profile_name]
-        # customer_master_legacy is a schema object, not necessarily a
-        # separately-scaled row count target; only the transactional
-        # tables need explicit scale entries here.
-        transactional = REQUIRED_OPERATIONAL_TABLES - {"customer_master_legacy"}
-        missing = transactional - set(profile)
+        missing = CONFIGURED_SCALE_TABLES - set(profile)
         assert not missing, f"{profile_name} profile missing row counts: {sorted(missing)}"
 
 
