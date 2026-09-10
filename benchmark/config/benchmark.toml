@@ -15,7 +15,9 @@ ground_truth_dir = "benchmark/ground_truth"
 # generation time -- never hard-coded here or in generate.py.
 [postgresql]
 dsn_env_var = "NORTHSTAR_DATABASE_URL"
-schema = "northstar"
+# Northstar's database is several schemas, not one namespace (see
+# benchmark/README.md, Scenario Contract SC-7 and SC-9).
+schemas = ["core", "finance", "analytics", "management"]
 
 # DuckDB is internal-only: test utilities and local comparison during
 # development. It is never Northstar's canonical environment.
