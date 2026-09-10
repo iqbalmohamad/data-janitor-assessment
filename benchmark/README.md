@@ -1,267 +1,312 @@
-# Northstar Distribution — Benchmark Architecture
+# Northstar Distribution — Demo Environment Architecture
 
-Design for the M0 synthetic benchmark. Governed by
+Design for the revised M0 synthetic demo environment. Governed by
 [`../Current Assignment.md`](../Current%20Assignment.md); on conflict, that
-document (and above it, `SPEC.md`) wins.
+document (and above it, `SPEC.md` including **Amendment 001**) wins.
 
 Northstar Distribution is a **fictional** B2B distributor. Every record is
-synthetic. Nothing here models a real organization.
+synthetic. Northstar is a **demo dataset** — a synthetic demonstration
+environment — not an industry benchmark, and it is never described as one.
 
 ---
 
-## 1. Components
+## 1. What this environment is for
+
+Northstar exists to make one thing demonstrable end to end: a realistic
+management reporting dispute — Revenue and Margin disagreeing across
+reporting surfaces — that can be investigated with evidence, reconciled,
+and explained to an executive. It is not a general-purpose data-health
+benchmark and does not attempt to exercise the full six-dimension /
+42-check methodology library (that library remains documented in `SPEC.md`
+as internal methodology, not an implementation target for this milestone).
+
+## 2. Components
 
 ```
 benchmark/
-├── generate.py        # deterministic generator (M0 implementation)
-├── load_duckdb.py     # loads generated CSVs into a DuckDB database (M0)
+├── generate.py        # deterministic generator targeting PostgreSQL (M0 implementation)
+├── load_duckdb.py     # optional dev/test-only mirror into DuckDB (M0 implementation)
 ├── config/
-│   └── benchmark.toml # canonical seed, as-of date, row counts, output paths
-├── data/              # generated output (gitignored): one CSV per dataset
-└── ground_truth/      # generated output (gitignored): ground_truth.json
+│   └── benchmark.toml # canonical seed, scenario config, scale profiles, output paths
+├── data/               # generated output (gitignored): DuckDB dev mirror, exports
+└── ground_truth/       # generated output (gitignored): hidden reconciliation ground truth
 ```
+
+The one sample Reporting Reliability Audit produced from this environment
+lives under `report/samples/` (a committed deliverable — see
+`Current Assignment.md` §11.9), not here.
 
 Execution contract:
 
 ```bash
-python benchmark/generate.py                # uses benchmark/config/benchmark.toml
-python benchmark/load_duckdb.py             # builds benchmark/data/northstar.duckdb
+python benchmark/generate.py --profile demo    # loads into PostgreSQL
+python benchmark/generate.py --profile smoke   # small profile for fast tests
+python benchmark/load_duckdb.py                # optional: dev/test DuckDB mirror
 ```
 
-`generate.py` must be runnable from the repository root, read all tunables
-from the config file, write datasets to `data/` and the manifest to
-`ground_truth/`, and take no network access. Parquet export remains possible
-via DuckDB (`COPY … TO … (FORMAT PARQUET)`); CSV is the primary format
-because it is diffable and inspectable.
+`generate.py` reads all tunables from `benchmark/config/benchmark.toml`,
+writes to the configured PostgreSQL target (connection details via
+environment variable, never hard-coded credentials), and takes no network
+access beyond that local/target database. It emits no wall-clock-dependent
+content.
 
-## 2. Simulated world
+## 3. Environment choice: PostgreSQL is canonical
 
-- **As-of date:** `as_of_date` in config (default `2026-09-01`). All
-  generated dates derive from it; the generator never reads the wall clock.
-- **History window:** ~24 months of orders ending at the as-of date.
-- **Business shape:** B2B customers (companies with contact persons) buying
-  from a catalog of distribution products (categories like packaging,
-  fasteners, safety equipment, cleaning supplies — deliberately generic),
-  paying invoices, occasionally returning goods.
-- **Operational layer:** a metric glossary (`metric_definitions`), a pipeline
-  run log (`pipeline_runs`), and a data catalog (`dataset_registry`) describe
-  how Northstar *manages* its data — this is where most metadata, ownership,
-  and reliability defects live.
+Per `SPEC.md` Amendment §O, **PostgreSQL is the canonical Northstar
+environment.** It plausibly represents the initial ICP's actual
+environment: operational tables, analytical views, legacy schemas,
+accumulated technical debt, and reporting logic expressed as SQL rather than
+as clean exports.
 
-## 3. Dataset schemas
+**DuckDB is internal-only** — a convenience for test utilities and local
+comparison during development. It must never be presented as Northstar's
+organizational data platform, and no product-facing material may describe
+Northstar as DuckDB-based.
 
-Primary keys in **bold**. Types are DuckDB-friendly (INTEGER, DOUBLE, DATE,
-TIMESTAMP, VARCHAR, BOOLEAN).
+**BigQuery is deferred** — do not introduce it to look enterprise-grade;
+only add it if a real engagement requires it (Amendment §O).
 
-### customers
-| column | notes |
-|---|---|
-| **customer_id** | `C` + zero-padded integer |
-| company_name | fictional |
-| contact_name | synthetic person name |
-| contact_email | synthetic, `@example.com`/`.example` domains only |
-| contact_phone | fictional pattern (e.g. `+1-555-…`) |
-| billing_address / city / region / postal_code / country | synthetic |
-| segment | e.g. wholesale / retail / online |
-| status | active / inactive / (defect: inconsistent casing & stray values) |
-| created_at | DATE |
-| notes | free text (defect: occasionally contains PII) |
+## 4. Simulated world
 
-### products
-**product_id**, sku, product_name, category, unit_cost, list_price,
-introduced_at, discontinued_at (nullable), status.
+- **History window:** ~3 years of order activity ending at a configured
+  as-of date.
+- **Business shape:** B2B distribution — companies buying from a product
+  catalog, paying invoices, occasionally returning goods. Generic enough
+  that it implies no real employer.
+- **Organizational realism:** Northstar's data environment should read like
+  it evolved organically — accumulated tables, a legacy customer table
+  that one report still joins against, informal notes, a partially
+  documented schema — not like a curated answer key. Per Amendment §N,
+  do **not** build a single tidy "metadata registry" or "metric
+  definitions" table as the primary carrier of organizational knowledge.
+  Where such evidence exists, prefer scattered, partial, sometimes-stale
+  sources: PostgreSQL `COMMENT ON TABLE`/`COMMENT ON COLUMN` metadata
+  (present for some objects, absent or stale for others), a handful of
+  informal text notes, a job/run log, and one ad hoc analyst CSV export —
+  never a single table that, if read, would hand an assessor the answers.
 
-### orders
-**order_id**, customer_id → customers, order_date, status
-(placed/shipped/delivered/cancelled), currency, subtotal_amount,
-tax_amount, shipping_amount, total_amount, ship_address fields
-(defect: PII replication), channel.
+## 5. The reconciliation scenario
 
-### order_items
-**order_item_id**, order_id → orders, product_id → products, quantity,
-unit_price, discount_pct, line_amount.
+Northstar must contain **at least one realistic Revenue/Margin dispute**
+(a third KPI may be added if it strengthens the story, per Amendment §R),
+reproducible across **at least three reporting surfaces** that compute the
+same underlying business activity differently:
 
-### payments
-**payment_id**, invoice_number, order_id → orders, payment_date, amount,
-method, status.
-
-### returns
-**return_id**, order_id → orders, order_item_id → order_items, return_date,
-quantity, refund_amount, reason.
-
-### customer_export
-A flat "marketing export" snapshot: **export_row_id**, customer_id,
-company_name, contact_name, contact_email, contact_phone, full_address,
-lifetime_order_count, lifetime_revenue, exported_at. Deliberately
-over-broad PII replication with no governance entry (see GT-PII/GT-OG).
-
-### metric_definitions
-**metric_id**, metric_name, definition_text, formula_text, owner_team
-(nullable), source_dataset (nullable), effective_from, status. Contains the
-conflicting Revenue / Active Customer / Net Sales definitions.
-
-### pipeline_runs
-**run_id**, pipeline_name, target_dataset, run_started_at, run_finished_at
-(nullable), status (success/failed/running), rows_loaded (nullable),
-triggered_by. ~24 months of run history for each pipeline.
-
-### dataset_registry
-**dataset_name**, description (nullable), owner_team (nullable),
-business_owner (nullable), steward (nullable), source_system (nullable),
-is_source_of_truth (nullable/conflicting), lifecycle_status (nullable),
-freshness_sla_hours (nullable), retention_policy (nullable),
-last_documented_at (nullable), column_docs_pct. One row per Northstar dataset (including the deprecated
-ones). This is the main carrier of metadata/ownership defects.
-
-### sales_summary *(optional, justified)*
-**summary_id**, month, category, gross_revenue, net_revenue, order_count.
-A monthly aggregate that does **not** reconcile with recomputation from
-orders/order_items/returns (GT-DQ-006) and embodies a third, conflicting
-Revenue formula.
-
-### customer_master_legacy *(optional, justified)*
-Same shape as `customers` minus `notes`, ~80% overlapping IDs with drifted
-values, no lifecycle status in the registry, still listed as available.
-Carrier of deprecated-dataset / unclear source-of-truth defects.
-
-## 4. Defect catalog
-
-Every defect below is injected deliberately, is deterministic under the
-canonical seed, and gets a ground-truth entry. IDs are stable; do not renumber.
-
-Defects target bounded slices: the untouched majority of every dataset is the
-clean control that `SPEC.md` §48 non-detection QA requires. Defects must not
-be pervasive.
-
-### Data Quality (DQ)
-| ID | Defect | Mechanism |
+| Surface | Role | Plausible formula |
 |---|---|---|
-| GT-DQ-001 | Duplicate customers | ~2% of companies re-inserted with new `customer_id`, name/email variants (casing, punctuation, domain typo) |
-| GT-DQ-002 | Orphan relationships | Small sets of `orders.customer_id`, `order_items.product_id`, `returns.order_id` pointing at deleted/nonexistent keys |
-| GT-DQ-003 | Duplicate transactions | A set of payments duplicated with same `invoice_number`/amount, new `payment_id`; a few orders double-inserted |
-| GT-DQ-004 | Missing critical values | NULL `contact_email` on a slice of customers, NULL `order_date` on a slice of orders, NULL `amount` on a few payments |
-| GT-DQ-005 | Invalid business values | Negative quantities, order dates after `as_of_date`, `total_amount` = 0 on delivered orders, undefined status codes |
-| GT-DQ-006 | Reconciliation mismatches | `orders.total_amount` ≠ sum of line amounts + tax + shipping on a slice; `sales_summary` months that disagree with recomputation |
+| `finance_monthly_report` | Finance's monthly extract/snapshot | e.g. revenue recognized net of returns and tax, at invoice date |
+| `mgmt_board_kpis` | Management/board reporting query | e.g. revenue at order date, including in-flight (unshipped) orders, joined against the legacy customer table |
+| `sales_dashboard_kpis` | Sales dashboard / analytical view | e.g. gross order value including cancelled-but-not-yet-reversed orders, excluding returns processed after month-end |
 
-### Metadata & Documentation (MD)
-| ID | Defect | Mechanism |
-|---|---|---|
-| GT-MD-001 | Missing table descriptions | NULL `description` in registry for several critical datasets |
-| GT-MD-002 | Incomplete column documentation | `column_docs_pct` well under 100 for most datasets, 0 for some |
-| GT-MD-003 | Missing source traceability | NULL `source_system` for datasets that clearly derive from others |
-| GT-MD-004 | Deprecated dataset without lifecycle status | `customer_master_legacy` registered, actively loadable, `lifecycle_status` NULL |
+The **specific** mechanism(s) chosen must be plausible and documented, drawn
+from Amendment §R's list: order-status inclusion, invoice-vs-order date,
+returns handling, discounts, tax, shipping, late-arriving transactions,
+cancellation handling, reporting grain, or restatement timing. **Do not**
+create the disagreement by inserting arbitrary wrong numbers — every
+divergence must be explainable as "surface X's query does Y, surface Z's
+query does not."
 
-### Metric Consistency (MC)
-| ID | Defect | Mechanism |
-|---|---|---|
-| GT-MC-001 | Conflicting **Revenue** | ≥2 registry definitions (gross incl. shipping vs excl. tax/shipping) + a third formula implicit in `sales_summary` |
-| GT-MC-002 | Conflicting **Active Customer** | One definition: order in last 90 days; another: order in last 12 months; different teams as owners |
-| GT-MC-003 | Conflicting **Net Sales** | Definitions differ on excluding returns vs returns+discounts vs cancelled orders |
+Each reporting surface must be **computed from the operational data by its
+own real logic** (a SQL view or a deterministically-populated snapshot
+table), not hardcoded — so that recomputing from operational data actually
+reproduces each surface's figure (this is directly tested; see
+`Current Assignment.md` §10.3).
 
-### Privacy & PII Hygiene (PII) — all PII synthetic
-| ID | Defect | Mechanism |
-|---|---|---|
-| GT-PII-001 | Unnecessary PII replication | Contact/address PII copied into `orders` ship fields and `customer_export` beyond need |
-| GT-PII-002 | Poorly governed export dataset | `customer_export` carries full PII, has no registry owner, no purpose, no lifecycle |
-| GT-PII-003 | PII in free text | Synthetic emails/phone numbers embedded in `customers.notes` for a small slice |
-| GT-PII-004 | Unclear retention | `retention_policy` NULL in the registry for the PII-bearing datasets (`customers`, `customer_export`, `customer_master_legacy`) |
+## 6. Schema
 
-### Ownership & Governance (OG)
-| ID | Defect | Mechanism |
-|---|---|---|
-| GT-OG-001 | Critical datasets without owners | NULL `owner_team` for `orders`, `payments` in registry |
-| GT-OG-002 | Missing business ownership | Technical owner set, `business_owner` NULL for several datasets |
-| GT-OG-003 | Unclear source of truth | Both `customers` and `customer_master_legacy` flagged (or neither flagged) as source of truth |
-| GT-OG-004 | Obsolete dataset still available | `customer_master_legacy` present, loaded by a still-running pipeline |
+### Operational data (PostgreSQL, canonical Northstar schema)
 
-### Reliability & Freshness (RF)
-| ID | Defect | Mechanism |
-|---|---|---|
-| GT-RF-001 | Stale datasets | Last successful run for some pipelines months before `as_of_date` |
-| GT-RF-002 | Failed pipelines | Failure streaks in `pipeline_runs` (including currently failing) |
-| GT-RF-003 | Duplicate/reprocessed ingestion | Same pipeline/day run twice with rows loaded both times (ties into GT-DQ-003) |
-| GT-RF-004 | Irregular data volume | `rows_loaded` spikes/drops far outside the pipeline's normal band |
-| GT-RF-005 | Missing freshness expectations | NULL `freshness_sla_hours` for most datasets in the registry |
+- **customers** — current canonical customer table.
+- **customer_master_legacy** — a superseded customer table, still queried by
+  at least one reporting surface (a plausible cause of divergence: different
+  customer population/segmentation between surfaces).
+- **products**
+- **orders**
+- **order_items**
+- **payments**
+- **returns**
 
-## 5. Ground-truth manifest
+Column-level detail is an implementation decision for `generate.py`, guided
+by the reconciliation mechanism chosen (§5) — e.g. if invoice-vs-order date
+is the chosen mechanism, `orders` needs both an `order_date` and an
+`invoice_date`, and `payments`/`returns` need timestamps that can land in
+different reporting months.
 
-`benchmark/ground_truth/ground_truth.json`, written by the generator, never
-read by the future assessment engine during normal execution.
+### Reporting-surface artifacts
+
+- **finance_monthly_report**, **mgmt_board_kpis**, **sales_dashboard_kpis**
+  — per §5. Implemented as SQL views or snapshot tables per what best fits
+  the chosen mechanism (a view for a live query-shape difference; a
+  snapshot table for a timing/restatement difference).
+
+### Fragmented evidentiary artifacts (not a clean registry)
+
+- `COMMENT ON TABLE` / `COMMENT ON COLUMN` metadata — present for some
+  objects, missing or stale for others.
+- A small **job/run log** table recording generation/refresh runs for the
+  reporting surfaces (freshness evidence for a supporting finding, if used).
+- One ad hoc **CSV export** representing an analyst's working extract
+  (usable for the secondary regulatory/PII hypothesis in `SPEC.md`
+  Amendment §L, if a limited synthetic-PII example is included — this
+  export is the only place PII may appear, and only in clearly synthetic
+  form).
+- Informal **ownership/documentation notes** (free text, not a structured
+  table) — incomplete and possibly out of date, standing in for the kind
+  of tribal knowledge a real mid-market company actually has.
+
+## 7. Scale
+
+Per Amendment §P, priority order is business-semantic realism >
+coherent transaction logic > realistic reporting disagreement > sufficient
+volume > raw row count. Two profiles may coexist in
+`benchmark/config/benchmark.toml`:
+
+- **`demo`** — the canonical scale for the sample report: on the order of
+  10⁴ customers, low thousands of products, 10⁵–10⁶ orders, low millions of
+  order_items, ~3 years of history.
+- **`smoke`** — a small profile (hundreds to low thousands of rows) used by
+  the test suite for fast, deterministic runs.
+
+Exact counts are configuration, not a success criterion, and may be tuned
+without triggering a new assignment.
+
+## 8. Supporting findings (optional, bounded)
+
+The sample report may include a small number of findings outside metric
+consistency if they materially improve realism (Amendment §T):
+
+- a freshness issue affecting one reporting surface (tie to the job/run
+  log);
+- a duplicate or missing transaction affecting the reconciliation;
+- undocumented reporting logic (tie to missing `COMMENT ON` metadata);
+- unclear ownership of one of the disputed metrics;
+- one limited synthetic-PII example, if used to demonstrate the secondary
+  regulatory hypothesis.
+
+These stay strictly supporting evidence for the one scenario. They must not
+reopen full six-dimension coverage or grow into a general defect catalog.
+
+## 9. Ground truth
+
+`benchmark/ground_truth/` — machine-readable, generated output, structurally
+separate from assessment- and report-visible data, **never** read by the
+future assessment workflow. Per Amendment §S, it documents:
+
+- the intended underlying business truth for the disputed metric(s);
+- which reporting surfaces differ, and by how much;
+- the specific planted mechanism(s) causing each surface's number to
+  diverge;
+- the expected reconciliation result a correct audit should reach;
+- any planted supporting-finding issues from §8.
+
+No 42-check or six-dimension coverage is required in the ground truth — only
+what the built scenario actually needs, so a QA reviewer can verify that the
+sample report's conclusion matches the intended answer.
+
+Example shape (illustrative, not mandatory):
 
 ```json
 {
   "manifest_version": 1,
-  "benchmark": "northstar-distribution",
+  "scenario": "northstar-revenue-margin-reconciliation",
   "seed": 20260910,
-  "as_of_date": "2026-09-01",
-  "expected_issues": [
-    {
-      "id": "GT-DQ-001",
-      "dimension": "data_quality",
-      "type": "duplicate_customers",
-      "description": "Near-duplicate customer records inserted with variant names/emails.",
-      "datasets": ["customers"],
-      "evidence": {"duplicate_pairs": [["C000123", "C004876"]]},
-      "expected_count": 96
-    }
-  ]
+  "underlying_truth": {
+    "metric": "revenue",
+    "period": "2026-08",
+    "true_value": 4128500000
+  },
+  "surfaces": [
+    {"name": "finance_monthly_report", "reported_value": 4128500000, "mechanism": null},
+    {"name": "mgmt_board_kpis", "reported_value": 4356200000, "mechanism": "includes_unshipped_orders"},
+    {"name": "sales_dashboard_kpis", "reported_value": 4402100000, "mechanism": "excludes_late_returns"}
+  ],
+  "expected_reconciliation": {
+    "recommended_definition": "finance_monthly_report",
+    "rationale": "Recognizes revenue only on shipped, invoiced orders net of returns processed through period end."
+  }
 }
 ```
 
-Rules:
-- `id` unique and stable, `GT-<DIM>-NNN` per the catalog above;
-- `dimension` ∈ {`data_quality`, `metadata_documentation`,
-  `metric_consistency`, `privacy_pii`, `ownership_governance`,
-  `reliability_freshness`};
-- `evidence` holds concrete locators (the affected keys/rows), shaped per
-  defect type — enough for QA to assert a check found exactly these;
-- `expected_count` is the number of affected records/instances;
-- no timestamps of generation time (would break byte-determinism).
+## 10. The sample report
 
-## 6. Generation pipeline & determinism
+The primary M0 deliverable (Amendment §U) is one presentable **Reporting
+Reliability Audit** built from this environment, committed under
+`report/samples/`. It must walk the full value chain:
+
+```
+management question → conflicting numbers → source evidence → reconciliation
+→ root cause → business impact → recommended definition → owner/remediation
+→ re-check path
+```
+
+and, per Amendment §I, present:
+
+- a **per-metric verdict** (`RECONCILED` / `CONFLICTING` / `UNVERIFIABLE`)
+  for each assessed metric;
+- **Evidence Coverage** for the scenario (how much of the relevant evidence
+  was actually inspected);
+- **definition reconciliation** — the observed definitions, where each is
+  used, and the recommended canonical definition for the decision at hand;
+- **business impact**, distinguishing measured from inferred impact;
+- a **remediation sequence** (immediate correction, ownership decision,
+  definition change, data/query correction, report correction, longer-term
+  prevention).
+
+It must be readable by a CFO/COO and independently verifiable by a
+technically literate reviewer against the generated evidence. It is a
+one-off hand-assembled artifact for this milestone — not the output of a
+general report-generation engine (that remains out of scope; see
+`Current Assignment.md` §5).
+
+## 11. Determinism & synthetic-data rules
 
 Order of operations in `generate.py`:
 
-1. Load config; fail fast on missing/invalid keys.
-2. Build clean base world in dependency order: products → customers → orders
-   → order_items → payments → returns → derived datasets (`customer_export`,
-   `sales_summary`, `customer_master_legacy`) → operational layer
-   (`metric_definitions`, `pipeline_runs`, `dataset_registry`).
-3. Inject defects per the §4 catalog, recording every affected key.
-4. Write datasets as CSV (fixed column order, `\n` line endings, UTF-8,
-   deterministic float formatting).
-5. Write `ground_truth.json` (sorted keys, fixed separators).
+1. Load config (including which scale profile); fail fast on missing/
+   invalid keys.
+2. Build the operational data in dependency order: products → customers
+   (+ `customer_master_legacy`) → orders → order_items → payments → returns.
+3. Materialize the three reporting-surface artifacts, each via its own real
+   logic per the chosen mechanism(s) — never hardcoded figures.
+4. Attach fragmented evidentiary artifacts (§6): comments, job log, CSV
+   export, ownership notes — including deliberate gaps and staleness.
+5. Write the hidden ground-truth manifest (§9) — sorted keys, fixed
+   separators, no generation-time timestamps.
 
 Determinism rules (binding):
-- one `random.Random(f"{seed}:{table_name}")` stream per table — isolates
-  tables so a change to one generator leaves the others byte-identical;
-- defect injection uses its own derived streams
-  (`f"{seed}:defect:{gt_id}"`);
+
+- one `random.Random(f"{seed}:{table_name}")` stream per table/surface;
+  scenario injection uses its own derived streams (never share a stream
+  across independent generators);
+- prefer `random()` / `getrandbits()` over `sample()` / `choices()` /
+  `shuffle()` where practical — only the former are contracted stable
+  across CPython versions;
+- reproducibility contract: **byte-identical** output for the same
+  code + config + seed on the same Python feature release; **materially
+  identical** across supported Python ≥3.12;
 - never iterate a `set`/`dict` where order reaches the output without
   sorting first;
-- all dates computed relative to `as_of_date`; no `datetime.now()`,
-  no `time.time()`, no `os.urandom`, no `uuid4`;
-- stdlib only for randomness; runtime dependency is `duckdb` (loading), and
-  the generator itself should need nothing beyond the standard library;
-- reproducibility contract: byte-identical output for the same
-  code + config + seed on the same Python feature release; materially
-  identical across supported Python ≥3.12 (see `Current Assignment.md` §9 —
-  prefer `random()`/`getrandbits()` over distribution helpers where
-  practical, since only those carry a cross-version stability guarantee).
+- all dates computed relative to the configured as-of date; no
+  `datetime.now()`, `time.time()`, `os.urandom`, or `uuid4`;
+- stdlib only for randomness; runtime dependencies are `psycopg` (loading
+  into PostgreSQL) and, for internal test/dev use only, `duckdb`.
 
 Synthetic-data safety rules (binding):
+
 - names/companies assembled from fictional word lists written for this
   project — not sampled from any real directory, customer list, or employer
   material;
-- emails only under `example.com` / `example.org` / `northstar.example`;
-- phone numbers only in fictional ranges (e.g. NANP `555-01xx` style);
-- addresses synthetic (fictional street names, real-looking but generic
-  city/region names are acceptable, no real person association).
+- if the optional synthetic-PII example (§8) is used: emails only under
+  `example.com`/`example.org`/`northstar.example`, phone numbers only in
+  fictional ranges, addresses synthetic — and limited to the single CSV
+  export called for in §6, not spread across the schema.
 
-## 7. DuckDB loading
+## 12. PostgreSQL loading notes
 
-`load_duckdb.py` creates `benchmark/data/northstar.duckdb` and one table per
-CSV via `read_csv` with explicit column types (schemas in §3 — explicit, so
-type defects survive loading rather than being "fixed" by inference). The
-database file is disposable derived output; CSVs remain the canonical
-generated form.
+`generate.py` connects to a target PostgreSQL instance (connection string
+via an environment variable, e.g. `NORTHSTAR_DATABASE_URL` — never
+hard-coded) and creates the schema from scratch. `load_duckdb.py` is a
+separate, optional dev/test convenience that mirrors the same logical data
+into a local DuckDB file for fast local inspection and for tests that don't
+need a live PostgreSQL instance; it is never Northstar's canonical
+environment (see §3).

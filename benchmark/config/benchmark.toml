@@ -1,28 +1,43 @@
-# Canonical generation configuration for the Northstar Distribution benchmark.
-# Governed by "Current Assignment.md" (M0). The seed below is canonical for
-# v0.1; changing it invalidates ground truth and requires a new assignment.
+# Canonical generation configuration for the Northstar Distribution demo
+# environment. Governed by "Current Assignment.md" (M0, revised per SPEC.md
+# Amendment 001). The seed below is canonical for v0.1; changing it
+# invalidates ground truth and requires a new assignment.
 
 [generation]
 seed = 20260910
 as_of_date = "2026-09-01"
-history_months = 24
-output_dir = "benchmark/data"
+history_years = 3
+scenario = "revenue_margin_reconciliation"
 ground_truth_dir = "benchmark/ground_truth"
-format = "csv"
 
-# Target row counts for the clean base world, before defect injection.
-# Injection perturbs these slightly (duplicates add rows); QA asserts
-# approximate counts, not exact ones.
-[row_counts]
-customers = 5000
-products = 800
-orders = 60000
-order_items = 150000
-payments = 58000
-returns = 3500
-customer_export = 4500
-metric_definitions = 15
-pipeline_runs = 1200
-dataset_registry = 12
-sales_summary = 200
-customer_master_legacy = 4000
+# PostgreSQL is the canonical Northstar environment (SPEC.md Amendment
+# section O). Connection details are supplied via environment variable at
+# generation time -- never hard-coded here or in generate.py.
+[postgresql]
+dsn_env_var = "NORTHSTAR_DATABASE_URL"
+schema = "northstar"
+
+# DuckDB is internal-only: test utilities and local comparison during
+# development. It is never Northstar's canonical environment.
+[duckdb]
+dev_mirror_path = "benchmark/data/northstar_dev.duckdb"
+
+# Two scale profiles. Exact counts are configuration, not a success
+# criterion (SPEC.md Amendment section P) -- realism and a coherent
+# reconciliation take priority over row count.
+
+[scale.demo]
+customers = 25000
+products = 3000
+orders = 400000
+order_items = 1200000
+payments = 390000
+returns = 22000
+
+[scale.smoke]
+customers = 300
+products = 60
+orders = 2000
+order_items = 6000
+payments = 1900
+returns = 120

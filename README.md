@@ -1,7 +1,7 @@
 # Data Janitor Assessment
 
 A productized **data-health assessment** with a lightweight local execution
-harness. It evaluates a data estate across six dimensions:
+harness. Its intellectual framework spans six dimensions:
 
 1. Data Quality
 2. Metadata & Documentation
@@ -10,67 +10,80 @@ harness. It evaluates a data estate across six dimensions:
 5. Ownership & Governance
 6. Reliability & Freshness
 
-The v0.1 catalog contains 42 checks. The assessment pipeline (future
-milestones) is:
-
-```
-Input Data → Profiling → Automated + Manual/Hybrid Checks → Normalized Findings
-           → Scoring → Risk Prioritization → AI Readiness → Assessment Report
-```
+with a documented catalog of 42 checks. **That full framework is not the
+current commercial or engineering target** — see below.
 
 ## Project status
 
-**Current milestone: M0 — Reproducible Broken Company** (definition phase).
+Per `SPEC.md` **Amendment 001** (2026-09-10, "Post-Feasibility Product
+Reorientation"), the six-dimension framework and 42-check catalog are
+retained as an internal methodology library, but the commercial and
+engineering focus has narrowed to a single validated wedge:
 
-M0 builds the benchmark, not the assessment engine: a fully synthetic,
-deterministic, inspectable test subject — the fictional B2B distributor
-**Northstar Distribution** — containing known, documented data-health defects
-across all six dimensions. See [`Current Assignment.md`](Current%20Assignment.md)
-for the full M0 assignment.
+> An independent, evidence-backed reconciliation of management numbers
+> (starting with Revenue and Margin) that materially disagree across
+> reporting surfaces.
+
+**Current milestone: M0 — Reporting Reliability Demo Environment**
+(definition phase; supersedes the prior "Reproducible Broken Company"
+milestone). M0 builds one realistic synthetic scenario — the fictional B2B
+distributor **Northstar Distribution**, now positioned as a *demo dataset*
+rather than an industry benchmark, with a Revenue/Margin dispute
+reproducible across at least three reporting surfaces — and uses it to
+produce one presentable sample **Reporting Reliability Audit**. See
+[`Current Assignment.md`](Current%20Assignment.md) for the full assignment.
+
+Engineering is capped at that deliverable: per Amendment §AA, further
+engineering pauses once M0's Definition of Done is met, pending commercial
+buyer validation. The full 42-check engine, composite scoring, AI
+Readiness, and SaaS infrastructure remain explicitly out of scope until the
+Product Owner reauthorizes them.
 
 ## Document hierarchy
 
 | Document | Role |
 |---|---|
-| `SPEC.md` | Canonical product specification (product truth). **Owned by the Product Owner.** |
-| `Current Assignment.md` | Canonical engineering assignment for the active milestone. |
+| `SPEC.md` (incl. Amendment 001) | Canonical product specification (product truth). **Owned by the Product Owner.** Amendment 001 overrides any conflicting original section. |
+| `Current Assignment.md` | Canonical engineering assignment for the active milestone (M0, revised). |
 
 If the two conflict, `SPEC.md` wins.
-
-`SPEC.md` is present at the repository root and the M0 assignment has been
-reconciled against it.
 
 ## Repository layout
 
 ```
 data-janitor-assessment/
 ├── README.md                 # this file — repository orientation
-├── SPEC.md                   # canonical product spec, owned by the PO
-├── Current Assignment.md     # active milestone assignment (M0)
+├── SPEC.md                   # canonical product spec + Amendment 001, owned by the PO
+├── Current Assignment.md     # active milestone assignment (M0, revised)
 ├── pyproject.toml            # Python project configuration
-├── benchmark/                # Northstar Distribution synthetic benchmark
-│   ├── README.md             # benchmark architecture & defect catalog design
-│   ├── config/               # generation configuration (seed, row counts, …)
-│   ├── data/                 # generated datasets (gitignored — regenerate)
-│   └── ground_truth/         # generated ground-truth manifest (gitignored)
+├── benchmark/                # Northstar Distribution demo environment
+│   ├── README.md             # demo-environment architecture & reconciliation scenario
+│   ├── config/               # generation configuration (seed, scale profiles, …)
+│   ├── data/                 # generated dev/test output (gitignored — regenerate)
+│   └── ground_truth/         # generated hidden ground truth (gitignored)
+├── report/
+│   └── samples/               # the one committed sample Reporting Reliability Audit
 └── tests/                    # test suite
 ```
 
-Directories for later milestones (`assessment/`, `runner/`, `report/`,
-`methodology/`, `public/`) are intentionally absent until a milestone needs
-them.
+Directories for later milestones (`assessment/`, `runner/`, `methodology/`,
+`public/`) are intentionally absent until a milestone needs them.
 
 ## Core constraints (summary)
 
 - **Independent IP** — everything here is independently created; all data is
   fictional and synthetic. No employer or client material of any kind.
-- **Local-first** — runs locally on Python 3.12+ with DuckDB. No mandatory
-  cloud, commercial API, external database, or AI service.
-- **LLM-independent** — deterministic checks, scoring, evidence, and AI
-  readiness classification never require an LLM.
+- **Local-first** — runs locally on Python 3.12+. **PostgreSQL is the
+  canonical Northstar environment**; DuckDB is an internal test/dev
+  convenience only, never the canonical platform. No mandatory cloud,
+  commercial API, or external AI service.
+- **LLM-independent** — deterministic evidence and reconciliation never
+  require an LLM.
 - **Read-only** — the product analyzes data; it never modifies source data.
 - **No SaaS infrastructure** — no auth, accounts, billing, dashboards,
   portals, scheduling, or notifications in v0.1.
+- **Demo, not benchmark** — Northstar is described as a demo dataset /
+  synthetic demonstration environment, never as an industry benchmark.
 
 ## Getting started
 
@@ -82,6 +95,7 @@ pip install -e ".[dev]"
 pytest
 ```
 
-Benchmark generation (`python benchmark/generate.py`) arrives with the M0
-implementation; its contract is defined in
+Northstar generation (`python benchmark/generate.py`) arrives with the M0
+implementation and targets a local PostgreSQL instance (connection via
+environment variable); its contract is defined in
 [`benchmark/README.md`](benchmark/README.md).

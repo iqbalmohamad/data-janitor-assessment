@@ -4,12 +4,15 @@ version = "0.1.0.dev0"
 description = "Productized data-health assessment with a lightweight local execution harness"
 requires-python = ">=3.12"
 dependencies = [
-    "duckdb>=1.0",
+    "psycopg[binary]>=3.1",
 ]
 
 [project.optional-dependencies]
+# DuckDB is an internal test/dev convenience only (SPEC.md Amendment
+# section O) -- never Northstar's canonical environment (PostgreSQL is).
 dev = [
     "pytest>=8.0",
+    "duckdb>=1.0",
 ]
 
 [build-system]
