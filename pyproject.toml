@@ -1,0 +1,25 @@
+[project]
+name = "data-janitor-assessment"
+version = "0.1.0.dev0"
+description = "Productized data-health assessment with a lightweight local execution harness"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# No importable package yet; benchmark/ scripts are run directly.
+packages = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
