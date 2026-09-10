@@ -1,79 +1,124 @@
-# Current Assignment — M0: Reproducible Broken Company
+# Current Assignment — M0: Reporting Reliability Demo Environment
 
 **Status:** Defined — ready for implementation
-**Milestone:** M0
+**Milestone:** M0 (revised)
 **Assignment owner:** Technical Lead
 **Canonical seed:** `20260910`
+
+> **Supersession notice.** This document replaces the prior M0 assignment
+> ("M0 — Reproducible Broken Company," covering all six assessment
+> dimensions), which is retired per `SPEC.md` **Amendment 001** (effective
+> 2026-09-10, §AH). Nothing from the prior assignment survives except where
+> this document explicitly says so. If you have the prior assignment open,
+> discard it.
 
 ---
 
 ## 1. Objective
 
-Establish a fully synthetic, deterministic, inspectable benchmark environment
-— the fictional B2B distributor **Northstar Distribution** — containing known,
-intentionally injected data-health defects across all six Data Janitor
-assessment dimensions, together with a machine-readable ground-truth manifest
-of those defects.
+Produce a realistic, deterministic synthetic environment for the fictional
+company **Northstar Distribution** — now positioned as a **demo dataset**,
+not an industry benchmark — containing one credible management reporting
+dispute (Revenue and Margin disagreeing across reporting surfaces), and use
+it to produce **one presentable sample Reporting Reliability / Metric
+Consistency Audit**. A machine-readable hidden ground-truth manifest
+documents the planted causes of the dispute, separate from assessment
+inputs.
 
-## 2. Why M0 exists
+## 2. Why M0 exists (revised)
 
-The Data Janitor assessment engine (later milestones) must be tested against a
-subject whose defects are *known in advance*. Without a stable, reproducible
-"broken company," check results cannot be validated honestly and regressions
-cannot be detected. M0 proves we have a stable test subject **before** any
-assessment logic is built. The benchmark is the foundation every subsequent
-milestone stands on.
+`SPEC.md` Amendment 001 changes the commercial thesis: Data Janitor's first
+validated wedge is not a broad six-dimension Data Health Assessment but a
+narrow, evidence-backed reconciliation of management numbers that disagree
+across systems. Before spending on buyer validation, the founder needs a
+credible, professional artifact that demonstrates the full commercial value
+chain — management question → conflicting numbers → evidence → reconciliation
+→ business impact → recommended definition → owner/remediation — end to end,
+on one scenario. M0 exists to produce exactly that artifact and the minimal
+environment needed to generate it. It is **not** a universal Data Janitor
+benchmark and does not need to exercise every dimension of the intellectual
+framework.
 
 ## 3. Canonical references
 
-1. `SPEC.md` — canonical product truth, present at the repository root.
-   This assignment was reconciled against it (2026-09-10). On any conflict,
-   `SPEC.md` wins.
+1. `SPEC.md`, including **Amendment 001** — canonical product truth.
+   Amendment 001 overrides any conflicting original section; non-conflicting
+   original sections remain valid. This assignment is reconciled against
+   both (2026-09-10).
 2. `Current Assignment.md` (this document) — canonical bounded engineering
-   assignment for M0.
-3. `benchmark/README.md` — benchmark architecture: schemas, defect catalog,
-   ground-truth format, determinism rules. Subordinate to this document.
-4. `benchmark/config/benchmark.toml` — canonical generation configuration
-   (seed, row counts, output locations).
+   assignment for the revised M0.
+3. `benchmark/README.md` — Northstar demo-environment architecture:
+   schema, the reconciliation scenario, ground-truth format, sample-report
+   structure. Subordinate to this document.
+4. `benchmark/config/benchmark.toml` — canonical generation configuration.
 
 ## 4. Scope
 
 M0 delivers, in this order:
 
-1. **Generator** — `benchmark/generate.py`: a deterministic, config-driven
-   Python 3.12+ program that produces all Northstar datasets and the
-   ground-truth manifest from code + `benchmark/config/benchmark.toml` +
-   the canonical seed.
-2. **Datasets** — the ten required datasets plus two justified optional
-   datasets (see §7): `customers`, `products`, `orders`, `order_items`,
-   `payments`, `returns`, `customer_export`, `metric_definitions`,
-   `pipeline_runs`, `dataset_registry`, `sales_summary`,
-   `customer_master_legacy`.
-3. **Injected defects** — the defect catalog in `benchmark/README.md` §4,
-   covering all six dimensions.
-4. **Ground truth** — a machine-readable manifest of every injected defect,
-   written to `benchmark/ground_truth/`, separate from assessment inputs.
-5. **DuckDB loadability** — a documented, scripted path from generated output
-   into a local DuckDB database.
-6. **Tests** — see §10.
-7. **Documentation** — how to generate, where data and ground truth live, how
-   to run tests.
+1. **Demo environment** — a PostgreSQL schema for Northstar Distribution
+   (canonical environment per Amendment §O), generated deterministically
+   from code + config + the canonical seed, containing:
+   - core operational data (customers, products, orders, order_items,
+     payments, returns, plus one legacy/superseded customer table);
+   - at least three reporting surfaces that compute Revenue/Margin
+     differently from the same underlying activity (a Finance extract, a
+     Management/board query, a Sales dashboard view);
+   - fragmented, realistic evidentiary artifacts (table/column comments,
+     a job/run log, an ad hoc CSV export, informal ownership notes) rather
+     than one tidy metadata registry table — per Amendment §N.
+2. **Reconciliation scenario** — one realistic Revenue+Margin dispute
+   (optionally with a third KPI) arising from plausible mechanisms (order
+   status inclusion, invoice vs. order date, returns, discounts, tax,
+   shipping, late-arriving transactions, cancellations, grain, restatement
+   timing) — not arbitrary wrong numbers.
+3. **Hidden ground truth** — a machine-readable manifest of the intended
+   underlying business truth, which surfaces differ and why, the specific
+   planted mechanisms, and the expected reconciliation result. Lives in
+   `benchmark/ground_truth/`, structurally separate from assessment inputs,
+   never read by the future assessment workflow.
+4. **A small number of supporting findings** outside metric consistency,
+   only if they materially improve realism (e.g., a freshness gap affecting
+   one surface, a duplicate/missing transaction, one limited synthetic-PII
+   example for the secondary regulatory hypothesis). These remain supporting
+   evidence — they do not reopen the full six-dimension scope.
+5. **One presentable sample Reporting Reliability Audit** — the primary M0
+   output (Amendment §U). Demonstrates the complete value chain end to end,
+   readable by a CFO/COO, with evidence a Head of Data could verify. This
+   report is hand-assembled from the generated evidence for M0; it does not
+   require a general-purpose report-generation engine.
+6. **Tests** — see §9.
+7. **Documentation** — how to generate Northstar, where the data and ground
+   truth live, how to run tests, and how to read the sample report.
 
 ## 5. Non-scope
 
-Explicitly **not** part of M0:
+Explicitly **not** part of the revised M0 (Amendment §V, §AD):
 
-- any of the 42 assessment checks;
-- profiling, normalized findings, scoring, risk prioritization;
-- AI readiness classification;
-- report generation (executive or otherwise);
-- remediation of any kind (the product is read-only over source data);
+- the full 42-check catalog, or any general-purpose check-execution engine;
+- full six-dimension coverage as a design goal — the demo only needs what
+  the Revenue/Margin scenario and its limited supporting findings require;
+- a generic Data Health Score, composite scoring, or Evidence Coverage
+  math beyond what's needed to state coverage for the one scenario in the
+  sample report;
+- AI Readiness classification of any kind;
+- a general connector framework or multi-database support — PostgreSQL
+  (canonical) and DuckDB (internal test/comparison use only) are the only
+  environments;
+- a reusable/templated report-generation engine — M0 produces one sample
+  report, not a report generator product;
+- remediation execution of any kind (the product is read-only over source
+  data);
 - LLM integration of any kind;
 - SaaS infrastructure: authentication, accounts, multi-tenancy, billing, web
   dashboards, customer portals, scheduled monitoring, notification systems,
-  SSO, cloud deployment;
+  SSO, cloud deployment, continuous monitoring;
+- BigQuery/Snowflake connectors;
+- landing-page implementation, marketing assets, or public proof-package
+  polish (Amendment §W) — a one-page commercial offer sheet and a minimal
+  security/data-handling pack are the only other v0.1 proof-package assets,
+  and neither is part of this engineering assignment;
 - distributed processing technology;
-- performance engineering beyond what the benchmark scale requires;
 - speculative abstraction "for future milestones."
 
 ## 6. Expected repository changes
@@ -81,185 +126,193 @@ Explicitly **not** part of M0:
 M0 implementation touches only:
 
 ```
-benchmark/generate.py          # new — the generator (may add small modules
-benchmark/…                    #        beside it if generate.py grows unwieldy)
-benchmark/load_duckdb.py       # new — loads generated output into DuckDB
-benchmark/config/benchmark.toml# may be tuned (row counts, defect params)
+benchmark/generate.py          # new — deterministic generator targeting PostgreSQL
+benchmark/load_duckdb.py       # new — optional dev/test mirror into DuckDB (§O)
+benchmark/config/benchmark.toml# may be tuned (row counts, scenario params)
 benchmark/README.md            # updated if implementation refines the design
-tests/…                        # new tests per §10
+benchmark/ground_truth/        # generated output (gitignored)
+report/samples/                # new — the one sample Reporting Reliability Audit
+tests/…                        # new tests per §9
 README.md                      # generation/usage instructions
 Current Assignment.md          # status updates only
 ```
 
 `benchmark/data/` and `benchmark/ground_truth/` are **generated output** and
-stay gitignored. Do not commit generated bulk data as source of truth. Small
-committed fixtures for tests are acceptable only if clearly labeled and tiny.
+stay gitignored. The sample report under `report/samples/` is a committed
+deliverable (it is the M0 proof artifact), not generated output to discard.
 
 ## 7. Benchmark requirements
 
 Full architecture: `benchmark/README.md`. Binding requirements:
 
-- **Fictional company.** Northstar Distribution is entirely fictional. Do not
-  model it on any real employer, client, or organization. Schema stays generic
-  B2B distribution: customers, product catalog, orders, payments, returns,
-  plus operational metadata (metric definitions, pipeline runs, dataset
-  registry).
-- **Required datasets:** `customers`, `products`, `orders`, `order_items`,
-  `payments`, `returns`, `customer_export`, `metric_definitions`,
-  `pipeline_runs`, `dataset_registry`.
-- **Optional datasets, included with justification:**
-  - `sales_summary` — required to realize reconciliation-mismatch and
-    conflicting-Revenue defects (an aggregate that disagrees with the
-    transactional data it claims to summarize);
-  - `customer_master_legacy` — required to realize deprecated-dataset,
-    unclear-source-of-truth, and obsolete-dataset-still-available defects.
-  No further domains may be added in M0.
-- **Synthetic PII only.** Emails, phone numbers, and addresses are generated
-  from fictional patterns (e.g. reserved example domains, invalid/fictional
-  phone ranges). No real personal information anywhere in the repository.
-- **Defect coverage.** All six dimensions carry injected defects per the
-  catalog in `benchmark/README.md` §4, which includes at minimum: duplicate
-  customers, orphan relationships, duplicate transactions, missing critical
-  values, invalid business values, reconciliation mismatches; missing table
-  descriptions, incomplete column documentation, missing source traceability,
-  stale/deprecated datasets without lifecycle status; conflicting definitions
-  of Revenue, Active Customer, and Net Sales; unnecessary PII replication, a
-  poorly governed export dataset, and unclear retention expectations for
-  PII-bearing datasets; ownerless critical datasets, missing
-  business ownership, unclear source of truth, obsolete-but-available
-  datasets; stale datasets, failed pipelines, duplicate/reprocessed ingestion,
-  irregular volume, missing freshness expectations.
-- **Clean control regions.** Defects are injected into bounded slices; the
-  untouched majority of each dataset is the clean control that `SPEC.md` §48
-  non-detection QA requires. Defects must not be pervasive.
-- **Scale.** Row counts per `benchmark/config/benchmark.toml` (order of
-  10⁴–10⁵ rows in the largest tables). Comfortably laptop-scale; no
-  infrastructure beyond Python + DuckDB.
-- **Formats.** CSV is the primary generated format (inspectable); loading
-  into DuckDB is scripted; Parquet export must remain possible via DuckDB
-  (no extra dependency for it).
+- **Environment.** PostgreSQL is the canonical Northstar environment
+  (Amendment §O). DuckDB may be used internally for test utilities and local
+  comparison only — never presented as Northstar's organizational platform.
+- **Demo dataset, not benchmark.** Public and internal language calls
+  Northstar a "demo dataset" or "synthetic demonstration environment," never
+  an industry benchmark (Amendment §M).
+- **Realistic fragmentation.** No single tidy metadata-registry table
+  stands in for organizational knowledge. Ownership, documentation, and
+  lineage evidence is deliberately scattered, partial, and sometimes stale —
+  across table/column comments, informal notes, job logs, and ad hoc
+  exports — the way it actually is at a mid-market company (Amendment §N).
+- **The scenario is the point.** At least one Revenue+Margin dispute must
+  be reproducible across ≥3 reporting surfaces, caused by a plausible,
+  identifiable mechanism (see §4.2). No arbitrary corrupted values.
+- **Scale.** Guided by Amendment §P — business-semantic realism and a
+  believable reconciliation take priority over raw row count. A canonical
+  "demo" scale profile (order of 10⁴ customers, 10⁵–10⁶ orders, low-millions
+  order_items, ~3 years of history) may coexist with a smaller "smoke" scale
+  profile used for fast tests. Exact counts are not a success criterion.
+- **Synthetic PII only**, where present at all — the secondary regulatory
+  hypothesis (Amendment §L) permits at most one limited, clearly synthetic
+  PII example; it is not a general PII-hygiene catalog.
 
 ## 8. Ground-truth requirements
 
-- Written by the generator to `benchmark/ground_truth/ground_truth.json`.
-- Machine-readable JSON conforming to the schema in `benchmark/README.md` §5:
-  one entry per injected defect with stable ID (`GT-<DIM>-NNN`), dimension,
-  defect type, human-readable description, affected datasets, evidence
-  locators (the concrete keys/rows affected), and expected counts.
-- Contains enough metadata for future QA to verify a check found *exactly*
-  the injected defects (IDs and counts, not just categories).
-- Kept **separate from assessment inputs**: it lives in
-  `benchmark/ground_truth/`, never inside `benchmark/data/`.
-- The future assessment engine must **never** read the ground-truth manifest
-  during normal execution. It is test/QA input only. Tests enforce the
-  directory separation; later milestones must preserve it.
+- Written by the generator to `benchmark/ground_truth/`, machine-readable,
+  and structurally separate from assessment/report inputs (never read by
+  the future assessment workflow — Amendment §S).
+- Documents: the intended underlying business truth for the disputed
+  metric(s); which reporting surfaces differ and by how much; the specific
+  planted mechanism(s) causing each difference; and the expected
+  reconciliation result a correct audit should reach.
+- Does **not** need to cover all 42 checks or all six dimensions — only the
+  scenario actually built.
+- No answer flags may leak into assessment-visible data (table/column
+  comments, exported files, or the demo schema itself).
 
 ## 9. Deterministic-generation requirement
 
 - Canonical seed: **`20260910`**, stored once in
   `benchmark/config/benchmark.toml`, never hard-coded elsewhere.
 - Same code + same configuration + same seed **on the same Python feature
-  release** (e.g. CPython 3.12.x) ⇒ **byte-identical** generated datasets and
-  ground-truth manifest. This is the property the determinism test asserts
-  (it regenerates within one interpreter).
-- Across different supported Python versions (≥3.12), output must remain
-  **materially identical** per `SPEC.md` §35/§48. CPython contracts
-  cross-version stability only for `random.random()` and compatible seeding,
-  so bit-level identity across future feature releases is not promised; to
-  minimize drift, prefer stable primitives (`random()`, `getrandbits()`) over
-  distribution helpers (`sample`, `choices`, `shuffle`) where practical.
+  release** (e.g. CPython 3.12.x) ⇒ byte-identical generated SQL/data and
+  ground-truth manifest. Across supported Python versions (≥3.12), output
+  must remain materially identical — see the note on stable RNG primitives
+  below.
 - No wall-clock reads in generated content: all dates/timestamps derive from
-  the configured simulation anchor date (`as_of_date` in config).
-- No iteration over unordered structures where order affects output; no
-  reliance on hash randomization; per-table RNG streams derived
-  deterministically from the canonical seed (see `benchmark/README.md` §6) so
-  editing one table's generator does not perturb the others.
-- Only the Python standard library RNG (`random.Random`) may be used for
-  randomness; no dependency whose output can drift across versions without a
-  pin.
+  a configured simulation anchor date; no `datetime.now()`, `time.time()`,
+  `os.urandom`, or `uuid4`.
+- One `random.Random(f"{seed}:{table_name}")` stream per table/surface;
+  defect/scenario injection uses its own derived streams. Prefer stable RNG
+  primitives (`random()`, `getrandbits()`) over distribution helpers
+  (`sample`, `choices`, `shuffle`) where practical, since only the former
+  carry a cross-version stability guarantee.
+- Loading into PostgreSQL must be idempotent against a clean target schema;
+  regenerating from scratch must reproduce the same logical dataset.
 
 ## 10. QA expectations
 
-Implemented under `tests/`, runnable with `pytest` locally on Python 3.12+.
-Minimum coverage:
+Implemented under `tests/`, runnable with `pytest` locally on Python 3.12+,
+without requiring a live PostgreSQL instance for the parts that don't need
+one (a local PostgreSQL, e.g. via a disposable container, is acceptable for
+the tests that do). Minimum coverage:
 
 1. **Generator execution** — generation runs end-to-end from a clean state
-   and exits successfully.
-2. **Expected tables** — every dataset listed in §7 is produced.
-3. **Approximate row counts** — each dataset's row count is within a
-   tolerance band of the configured target (bands defined in tests, since
-   defect injection perturbs exact counts).
-4. **Representative injected defects** — for each of the six dimensions, at
-   least one injected defect is verified to actually exist in the generated
-   data (e.g. the duplicate customer pairs named in ground truth really are
-   near-duplicates; a payment named as duplicated really appears twice).
+   and exits successfully, using the "smoke" scale profile.
+2. **Expected schema** — the core operational tables and all three
+   reporting-surface artifacts exist.
+3. **Reconciliation is real** — recomputing each reporting surface's
+   Revenue/Margin figure from the underlying operational data reproduces
+   that surface's reported number (i.e., the disagreement is a genuine
+   product of differing logic, not a hardcoded mismatch).
+4. **Ground-truth integrity** — the manifest parses, names the planted
+   mechanism(s) and the expected reconciliation result, and is not
+   reachable from assessment-visible data.
 5. **Deterministic generation** — generating twice with the canonical seed
-   into two directories produces identical output (byte comparison or stable
-   hash comparison).
-6. **Ground-truth integrity** — manifest parses, every entry has the required
-   fields, IDs are unique, every referenced dataset exists.
-7. **DuckDB loadability** — generated output loads into DuckDB and the
-   expected tables are queryable.
+   produces identical output (byte or stable-hash comparison).
+6. **Sample report consistency** — the numbers quoted in the sample report
+   match the generated evidence and the ground truth's expected
+   reconciliation result.
 
-Tests must not require network access.
+Tests must not require network access beyond a local/disposable PostgreSQL
+instance under the tester's own control.
 
 ## 11. Definition of Done
 
-M0 is done when all of the following hold and are verified:
+The revised M0 is done when all of the following hold and are verified:
 
-1. Northstar benchmark generation runs locally on Python 3.12+.
+1. Northstar generation runs locally on Python 3.12+ against PostgreSQL.
 2. Generation starts from code + config, not manually maintained bulk data.
 3. Re-running with seed `20260910` reproduces byte-identical output on the
-   same interpreter (per the §9 contract).
-4. All required benchmark datasets exist (§7).
+   same interpreter (per §9).
+4. The operational tables and ≥3 reporting surfaces exist and are loadable.
 5. Synthetic data contains no real personal or employer information.
-6. Known intentional defects cover all six assessment dimensions.
-7. Ground truth documents the injected defects separately (§8).
-8. Generated output can be loaded into DuckDB via the scripted path.
-9. The tests in §10 exist and pass.
+6. The Revenue/Margin dispute is reproducible and traceable to a specific,
+   documented mechanism — not an arbitrary corrupted value.
+7. Ground truth documents the dispute separately from assessment inputs and
+   is never read by the (not-yet-built) assessment workflow.
+8. The tests in §10 exist and pass.
+9. One presentable sample Reporting Reliability Audit exists under
+   `report/samples/`, demonstrating the full value chain in §4.5 and
+   readable by a non-technical executive while remaining verifiable by a
+   technical reviewer.
 10. Documentation explains how to generate Northstar, where generated data
-    lives, where ground truth lives, and how to run tests.
-11. No assessment scoring engine has been implemented (beyond what §10
-    minimally requires to validate the benchmark itself).
-12. No report generator has been implemented.
-13. No SaaS infrastructure has been introduced.
+    and ground truth live, how to run tests, and how to read the sample
+    report.
+11. No 42-check engine, composite scoring platform, or AI Readiness logic
+    has been implemented.
+12. No SaaS infrastructure, connector framework, or continuous-monitoring
+    capability has been introduced.
+13. Nothing claims Northstar is an industry benchmark.
 
 ## 12. Explicit prohibitions
 
 - **No employer/client material** — no code, schemas, datasets, queries,
   documentation, metrics, business processes, or client material from any
   employer. Northstar is fictional and independently designed.
-- **No real PII** — anywhere, including test fixtures, examples, and docs.
-- **No LLM dependency** — generation, ground truth, and tests run fully
-  offline with no AI service.
-- **No committed bulk data** — generated output stays out of git.
-- **No new domains** beyond the datasets in §7.
-- **No assessment engine, scoring, AI-readiness classification, or report
-  generation** in this milestone.
+- **No real PII** anywhere, including test fixtures, examples, and docs.
+- **No LLM dependency** — generation, ground truth, and the sample report
+  run fully offline with no AI service.
+- **No committed generated bulk data or ground truth** — both stay out of
+  git; the sample report is the one committed deliverable artifact.
+- **No full six-dimension buildout, no 42-check implementation, no
+  composite scoring, no AI Readiness** — blocked per Amendment §AD until the
+  Product Owner reauthorizes after commercial validation.
 - **No SaaS scaffolding**, including "empty for future use" directories.
-- **No distributed processing** or infrastructure beyond Python + DuckDB.
-- **Never wire ground truth into assessment inputs.**
+- **No BigQuery/Snowflake connector, no generic connector framework.**
+- **No industry-benchmark framing** for Northstar.
+- **No distributed processing** or infrastructure beyond
+  Python + PostgreSQL (+ DuckDB for internal test use).
+- **Never wire ground truth into assessment- or report-visible data.**
+- **Do not proceed to further engineering once M0's Definition of Done is
+  met** — Amendment §AA pauses engineering at that point pending commercial
+  validation. Flag completion to the Product Owner rather than continuing
+  into M1-shaped work.
 
 ## 13. Expected implementation handoff
 
-An engineer implementing M0 starts from this baseline and should:
+An engineer implementing the revised M0 starts from this baseline and
+should:
 
-1. Read this document, then `benchmark/README.md` (architecture and defect
-   catalog), then `benchmark/config/benchmark.toml`.
-2. Implement `benchmark/generate.py` against that architecture: clean-slate
-   generation of base data first, defect injection second, ground-truth
-   manifest emission last (see `benchmark/README.md` §6 for pipeline order
-   and determinism rules).
-3. Implement `benchmark/load_duckdb.py`.
-4. Implement the §10 test suite; the existing `tests/test_benchmark_config.py`
-   already pins the canonical seed and dataset list.
-5. Update `README.md` usage instructions to match reality.
-6. Keep every change inside §6's file list; anything outside it needs a new
+1. Read this document, then `benchmark/README.md`, then
+   `benchmark/config/benchmark.toml`.
+2. Design the reconciliation scenario first (§4.2) — the specific
+   mechanism(s) causing Revenue/Margin to disagree — before writing any
+   generator code. The scenario is the point; the data volume is not.
+3. Implement `benchmark/generate.py` against that design: operational data
+   first, the three reporting-surface artifacts second (each computing its
+   own figure from the operational data via its own logic — never a
+   hardcoded number), fragmented metadata/documentation artifacts third,
+   ground-truth manifest last.
+4. Implement `benchmark/load_duckdb.py` only as a dev/test convenience, not
+   as an alternate canonical path.
+5. Implement the §10 test suite.
+6. Hand-assemble the one sample Reporting Reliability Audit from the
+   generated evidence, following the value chain in §4.5 and the
+   customer-facing output shape in Amendment §I (per-metric verdict,
+   evidence coverage, definition reconciliation, business impact,
+   remediation sequence).
+7. Update `README.md` usage instructions to match reality.
+8. Keep every change inside §6's file list; anything outside it needs a new
    assignment.
-7. This assignment is reconciled against `SPEC.md` as of 2026-09-10. If a
-   later `SPEC.md` revision contradicts it, `SPEC.md` wins — raise the
-   conflict, don't silently diverge.
+9. Stop at the §11 Definition of Done and report completion to the Product
+   Owner — do not continue into further engineering (§12, last bullet).
+10. This assignment is reconciled against `SPEC.md` including Amendment 001
+    as of 2026-09-10. If a later amendment contradicts it, `SPEC.md` wins —
+    raise the conflict, don't silently diverge.
 
 Deliverable of the handoff: a branch/PR against `main` in which the §11
-Definition of Done is demonstrably satisfied, with test output included in
-the PR description.
+Definition of Done is demonstrably satisfied, with test output and the
+sample report included in the PR description.
