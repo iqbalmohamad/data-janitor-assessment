@@ -1,8 +1,8 @@
 # Current Assignment — M0: Reporting Reliability Demo Environment
 
-**Status:** Scenario Contract drafted — **implementation blocked pending
-Scenario Design Gate** (Product Manager / Technical Lead review of the
-Scenario Contract in `benchmark/README.md`, Part II)
+**Status:** Scenario Design Gate PASSED — ready for M0 implementation
+authorization (Scenario Contract in `benchmark/README.md`, Part II, is
+approved and final; implementation not yet started)
 **Milestone:** M0 (revised)
 **Assignment owner:** Technical Lead
 **Canonical seed:** `20260910`
@@ -17,9 +17,11 @@ Scenario Contract in `benchmark/README.md`, Part II)
 > **Process gate.** The M0 scenario is fixed by the Scenario Contract
 > (`benchmark/README.md`, Part II, sections SC-1 to SC-18). The agreed
 > sequence is: Scenario Contract → Scenario Design Gate → M0 implementation
-> authorization. No implementation work (generator, schema, surfaces,
-> sample report) starts until the gate has passed and the status line above
-> is updated to say so.
+> authorization. The Scenario Design Gate has **PASSED** (Product Manager /
+> Technical Lead review, criteria A–H). M0 implementation work (generator,
+> schema, surfaces, sample report) is authorized to begin on a fresh branch
+> created from `main` after the Scenario Contract PR merges; it is not part
+> of that PR.
 
 ---
 

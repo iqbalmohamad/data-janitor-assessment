@@ -17,8 +17,9 @@ environment — not an industry benchmark, and it is never described as one.
 
 | Item | State |
 |---|---|
-| Scenario Contract (Part II of this document) | **DRAFTED — pending Scenario Design Gate** |
-| M0 implementation (generator, PostgreSQL schema, surfaces, sample report) | **BLOCKED** until the gate passes |
+| Scenario Contract (Part II of this document) | **APPROVED — final for M0 implementation** |
+| Scenario Design Gate (Product Manager / Technical Lead review, criteria A–H) | **PASS** |
+| M0 implementation (generator, PostgreSQL schema, surfaces, sample report) | **Not started.** Scenario Design Gate PASSED — ready for M0 implementation authorization. Implementation proceeds on a fresh branch from post-merge `main`; none of it belongs in the Scenario Contract PR. |
 
 The agreed process is:
 
@@ -30,11 +31,11 @@ Scenario Design Gate — Product Manager / Technical Lead review
 M0 implementation authorization (status updated here and in Current Assignment.md)
 ```
 
-An implementation engineer must not start `benchmark/generate.py` or any
-other M0 implementation work while the status above reads "pending". The
-contract exists so that implementation can proceed **without rediscovering
-or redesigning the scenario**: everything below Part II is binding on the
-implementation unless the gate review changes it.
+The gate has passed and the contract is final. An implementation engineer
+starts from this contract as written: everything in Part II is binding on
+the implementation, so it can proceed **without rediscovering or
+redesigning the scenario**. Any change to the contract goes back through
+the gate rather than being made during implementation.
 
 This document is design documentation. It is **not** part of the
 assessment-visible environment (see §SC-12) — it explains the planted
@@ -988,13 +989,10 @@ handle; they are listed so they are not rediscovered.
    Assignment.md` §6 already allows `benchmark.toml` to gain scenario
    parameters during implementation; add them then. `as_of_date` keeps its
    §SC-5 meaning (period boundary anchor).
-2. **`tests/test_benchmark_config.py` predates this contract.** Its
-   informational constants still list the generic surface names
-   (`finance_monthly_report`, `mgmt_board_kpis`, `sales_dashboard_kpis`)
-   and `customer_master_legacy`; only the transactional-table check is
-   asserted, and it still holds. Reconcile those constants when the M0
-   test suite is written (assignment §10). This contract does not change
-   tests.
+2. **`tests/test_benchmark_config.py` is aligned with this contract.** It
+   asserts the canonical seed, the configured-count tables of §SC-14, and
+   the `core` / `finance` / `analytics` / `management` schema set. The M0
+   test suite (assignment §10) is added beside it, not in place of it.
 3. **Surface SQL and note sources** live under `benchmark/scenario/` as
    committed source; the generator copies/renders them into the evidence
    directory. Their file names follow §SC-12.2 and must also satisfy
