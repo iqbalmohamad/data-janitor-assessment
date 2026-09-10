@@ -1739,3 +1739,854 @@ And:
 > The same methodology can produce a credible assessment on data it was not specifically designed around.
 
 That is the product proof required before attempting to sell the assessment or build a larger software platform.
+
+---
+
+# SPEC Amendment 001 — Post-Feasibility Product Reorientation
+
+**Effective date:** 10 September 2026
+**Status:** ACTIVE — CANONICAL OVERRIDE
+**Decision basis:** Final Product Feasibility Synthesis, 10 September 2026
+**Applies to:** Data Janitor Assessment v0.1
+
+## A. Amendment Authority
+
+This amendment records the Product Owner decision following the independent primary research, challenger research, and final feasibility synthesis.
+
+Where this amendment conflicts with any existing section of `SPEC.md` (sections 1–52 above), this amendment takes precedence.
+
+All existing sections of `SPEC.md` that do not conflict with this amendment remain valid.
+
+The canonical hierarchy becomes:
+
+```
+SPEC.md
+  └── Amendment 001
+        ↓
+  remaining non-conflicting SPEC sections
+
+Current Assignment.md
+        ↓
+current bounded engineering work
+```
+
+`Current Assignment.md` must be rewritten before further M0 implementation so that it reflects this amendment.
+
+No implementation assignment written before this amendment should be executed if it conflicts with the decisions below.
+
+## B. Feasibility Gate Decision
+
+The commercial decision is:
+
+**VALIDATE BEFORE BUILDING FURTHER**
+
+Data Janitor is not yet authorized as a broad six-dimension commercial product.
+
+The current evidence does not establish that reachable buyers will pay for a standalone general Data Health Assessment.
+
+The strongest surviving commercial hypothesis is narrower:
+
+> An independent, evidence-backed reconciliation of management numbers that materially disagree across systems, reports, or teams.
+
+The first commercial wedge is therefore:
+
+**Reporting Reliability / Metric Consistency Audit**
+
+Working commercial names may include:
+
+- Number Reconciliation Audit;
+- Reporting Reliability Audit;
+- Metric Consistency Audit.
+
+The exact public name may be refined later.
+
+The Product Owner must not represent the current opportunity as validated product-market fit.
+
+## C. Revised Product Thesis
+
+The previous broad thesis — assess data health across six dimensions, produce a Data Health Score, and later evolve into continuous monitoring software — is no longer the primary commercial thesis for v0.1.
+
+The revised thesis is:
+
+> Organizations sometimes face consequential decisions where revenue, margin, customer, inventory, or other management numbers disagree across reporting surfaces. Data Janitor provides an independent, evidence-backed reconciliation of those numbers, explains why they differ, establishes the appropriate definition for the decision at hand, and provides a bounded remediation path.
+
+The initial customer does not primarily pay for:
+
+- profiling;
+- automated checks;
+- a dashboard;
+- an assessment engine;
+- a proprietary score.
+
+The initial customer is hypothesized to pay for:
+
+```
+evidence
++
+independent judgment
++
+definition reconciliation
++
+business materiality
++
+decision support
++
+written accountability
+```
+
+Software initially exists to improve delivery consistency and reduce founder effort.
+
+It is not initially the customer-facing product.
+
+## D. Initial Commercial Offer
+
+The initial commercial offer is a bounded Reporting Reliability / Metric Consistency engagement.
+
+Canonical pilot scope should remain approximately:
+
+```
+1 consequential reporting workflow
+up to 3 named management metrics
+up to 10 critical data objects/tables
+up to 2 reporting surfaces
+up to 3 stakeholder interviews
+1 final reconciliation/readout
+```
+
+Exact limits may change after real buyer conversations.
+
+The offer should answer questions such as:
+
+- Why does Finance report one Revenue number while Sales or Management reports another?
+- Which definition should be used for the decision currently being made?
+- How large is the difference?
+- What business decisions are affected?
+- What should be corrected first?
+
+## E. Revised Initial ICP
+
+The initial ICP is not: any company with data.
+
+The working ICP is:
+
+> An Indonesian mid-market company with meaningful transactional or analytical data, at least two reporting surfaces, a small or stretched data/analytics capability, and a recent material disagreement over management numbers.
+
+Company size may approximately fall within:
+
+```
+100–1,500 employees
+```
+
+but this is guidance, not a hard segmentation rule.
+
+More important characteristics are:
+
+- a real management decision is pending;
+- numbers materially disagree;
+- there is an identifiable CFO, COO, founder, or executive sponsor;
+- technical evidence is accessible;
+- the internal team has not already resolved the dispute;
+- the organization is reachable through a trusted introduction or existing network.
+
+Initial industries may include:
+
+- distribution;
+- fintech;
+- payments;
+- lending;
+- other transactional businesses represented in the founder's existing professional network.
+
+Industry specialization remains secondary to the trigger.
+
+## F. Initial Buying Trigger
+
+The strongest initial buying trigger is:
+
+> A pending management decision is blocked or weakened because two or more versions of the same important number do not agree.
+
+Examples may include:
+
+- board reporting;
+- budgeting;
+- investor reporting;
+- pricing decisions;
+- revenue reporting;
+- margin reporting;
+- customer activity;
+- inventory planning;
+- management performance reporting.
+
+A general desire to "improve data quality" is not sufficient as the primary commercial trigger.
+
+## G. Status of the Six-Dimension Framework
+
+The six existing dimensions remain part of the Data Janitor intellectual framework:
+
+1. Data Quality
+2. Metadata & Documentation
+3. Metric Consistency
+4. Privacy & PII Hygiene
+5. Ownership & Governance
+6. Reliability & Freshness
+
+However: they are no longer the required scope of the first commercial engagement.
+
+The broad framework remains useful as:
+
+- a research library;
+- an internal methodology;
+- a source of future checks;
+- a possible later product expansion.
+
+It must not force v0.1 engineering to implement every dimension.
+
+## H. Status of the 42 Checks
+
+The canonical 42-check catalog remains documented.
+
+It is frozen as a methodology library, not an implementation backlog.
+
+M0 and the first commercial validation phase are explicitly not required to implement all 42 checks.
+
+A check should only become implemented during the commercial validation period if it is necessary to:
+
+- produce the sample Reporting Reliability Audit;
+- deliver an actual design-partner engagement;
+- provide evidence requested by a paying buyer.
+
+Do not implement checks merely because they exist in the catalog.
+
+The existence of a check in `SPEC.md` does not itself authorize engineering work.
+
+## I. Revised Customer-Facing Output
+
+The original broad customer-facing Data Health Score is no longer the primary v0.1 output.
+
+For the initial wedge, customer-facing output should prioritize:
+
+**Per-metric verdict.** Each assessed metric receives one of:
+
+```
+RECONCILED
+CONFLICTING
+UNVERIFIABLE
+```
+
+Additional qualifiers may be introduced if real engagements require them.
+
+**Evidence Coverage.** Evidence Coverage remains a first-class visible output. It should communicate whether enough evidence was available to support the conclusion.
+
+Example:
+
+```
+Revenue
+Verdict: CONFLICTING
+
+Evidence Coverage:
+8 of 10 critical assets inspected
+```
+
+Evidence Coverage is more important than presenting false precision.
+
+**Definition reconciliation.** For each material metric, the assessment should show:
+
+- observed definitions;
+- calculation differences;
+- reporting surfaces using each definition;
+- recommended canonical definition for the decision under review;
+- remaining unresolved assumptions.
+
+**Business impact.** Where reasonably quantifiable:
+
+- absolute discrepancy;
+- percentage discrepancy;
+- affected period;
+- potential rupiah impact;
+- decision affected.
+
+The report must distinguish measured impact from inferred impact.
+
+**Remediation sequence.** Provide:
+
+- immediate correction;
+- ownership decision;
+- definition change;
+- data/query correction;
+- report correction;
+- longer-term prevention where relevant.
+
+## J. Data Health Score
+
+The existing proprietary 0–100 Data Health Score is: **INTERNAL ONLY FOR v0.1**
+
+It must not be:
+
+- the landing-page headline;
+- the main sales proposition;
+- positioned as an industry benchmark;
+- presented as externally calibrated;
+- used to imply objective comparison between companies.
+
+Internal scoring experiments may remain available for:
+
+- methodology development;
+- before/after comparisons;
+- future research.
+
+The score may return to customer-facing output only after enough real engagements exist to justify its usefulness and interpretation.
+
+No engineering effort should be spent polishing the composite score during the commercial validation period.
+
+## K. AI Readiness
+
+General-purpose:
+
+```
+READY
+CONDITIONAL
+NOT READY
+```
+
+AI Readiness classification is removed as a required general v0.1 customer deliverable.
+
+The six-dimension framework is insufficient to support a broad claim that an organization is generally "AI ready."
+
+AI may remain a buying trigger.
+
+For a specific funded AI use case, Data Janitor may state a bounded conclusion such as:
+
+> No blocker found within the assessed data prerequisites for use case X.
+
+or:
+
+> Use case X is blocked by unresolved metric/data prerequisite Y.
+
+Any such statement must clearly specify its assessment scope.
+
+"AI Readiness" should not be the primary product positioning.
+
+## L. Secondary Regulatory Hypothesis
+
+A second commercial hypothesis may be tested alongside the initial wedge:
+
+> PP 33/2026 data-side personal-data inventory / evidence support.
+
+This is a validation hypothesis only.
+
+No major engineering effort is authorized for it.
+
+A lightweight offer sheet may test buyer interest in areas such as:
+
+- where personal data exists;
+- evidence of access;
+- retention evidence;
+- ownership;
+- data-side inventory.
+
+Data Janitor must not claim:
+
+- legal certification;
+- compliance certification;
+- guaranteed PDP compliance.
+
+This secondary hypothesis does not replace the Reporting Reliability wedge unless buyer evidence supports doing so.
+
+## M. Northstar Reclassification
+
+Northstar Distribution is no longer positioned as an industry benchmark.
+
+Public language should use:
+
+> Demo Dataset
+
+or:
+
+> Synthetic Demonstration Environment
+
+Avoid: industry benchmark — unless genuine cross-company reference data exists later.
+
+Northstar's job is:
+
+> demonstrate how a Reporting Reliability / Metric Consistency engagement works from evidence to executive conclusion.
+
+Northstar does not need to prove the full 42-check methodology.
+
+## N. Revised Northstar Model
+
+Northstar should resemble an organically evolved mid-market company's data environment.
+
+It should not resemble an assessment answer sheet.
+
+Avoid artificial convenience structures whose only purpose is to expose assessment answers.
+
+In particular, Northstar should not depend on neat canonical tables such as:
+
+```
+metric_definitions
+dataset_registry
+```
+
+as the primary representation of real organizational knowledge.
+
+Where such evidence exists, prefer realistic fragmented sources. Examples:
+
+```
+PostgreSQL schemas
+analytical views
+legacy tables
+report queries
+finance extracts
+BI/reporting SQL
+partial documentation
+CSV exports
+job logs
+ownership notes
+outdated documentation
+```
+
+Important information may be:
+
+- missing;
+- incomplete;
+- contradictory;
+- stale;
+- available only in one reporting artifact.
+
+That is intentional.
+
+## O. Northstar Technical Environment
+
+**The preferred canonical Northstar v0.1 environment is: PostgreSQL**
+
+PostgreSQL represents a plausible middle-ground environment for the initial ICP:
+
+- operational data;
+- analytical tables/views;
+- reporting logic;
+- legacy schemas;
+- accumulated technical debt.
+
+PostgreSQL is preferred over DuckDB as the primary simulated company environment.
+
+**DuckDB** may still be used internally for:
+
+- test utilities;
+- local comparison;
+- temporary analytical processing;
+- development support.
+
+It must not be presented as Northstar's canonical organizational data platform.
+
+**BigQuery** is deferred.
+
+Do not introduce BigQuery solely to make the demo appear enterprise-grade.
+
+A BigQuery adapter or validation environment should be introduced only when:
+
+- a real engagement uses BigQuery;
+- commercial evidence demonstrates that it is a priority stack.
+
+## P. Northstar Scale
+
+The previous small synthetic scale is no longer binding.
+
+The demo should be large enough to feel like a credible mid-market transactional environment.
+
+Approximate target scale may be on the order of:
+
+```
+customers        tens of thousands
+products         several thousand
+orders           hundreds of thousands to low millions
+order_items      low millions
+history          approximately 3 years
+```
+
+Exact scale is not itself a success criterion.
+
+Priority order is:
+
+```
+business-semantic realism
+>
+coherent transaction logic
+>
+realistic reporting disagreement
+>
+sufficient volume
+>
+raw row count
+```
+
+Do not generate millions of rows simply to claim scale.
+
+A smaller development/smoke profile may exist alongside a canonical demo profile if useful.
+
+## Q. Revised M0
+
+The previous M0 definition — Reproducible Broken Company covering all six dimensions — is superseded.
+
+The new M0 is:
+
+**M0 — Reporting Reliability Demo Environment**
+
+M0 exists to produce the realistic synthetic evidence needed to generate one credible sample Number Reconciliation / Reporting Reliability Audit.
+
+M0 is not a universal Data Janitor benchmark.
+
+## R. Required M0 Scenario
+
+M0 must include at least one realistic management reporting dispute.
+
+Preferred scenario:
+
+```
+Revenue
+Margin
++
+one additional management KPI if useful
+```
+
+The environment should contain multiple reporting surfaces that produce materially different results from the same underlying business activity.
+
+Example surfaces may include:
+
+```
+Finance monthly report
+Management / board reporting query
+Sales dashboard or analytical view
+```
+
+The disagreement should arise through plausible differences such as:
+
+- order status inclusion;
+- invoice vs order date;
+- returns;
+- discounts;
+- tax;
+- shipping;
+- late-arriving transactions;
+- cancellation handling;
+- reporting grain;
+- restatement timing.
+
+Do not create disagreement merely by inserting arbitrary wrong numbers.
+
+## S. M0 Ground Truth
+
+M0 may retain hidden ground truth for QA.
+
+Ground truth should identify:
+
+- the intended underlying business truth;
+- which reporting surfaces differ;
+- why they differ;
+- known planted issues;
+- expected reconciliation result.
+
+Ground truth must remain invisible to the future assessment workflow.
+
+Do not expose answer flags inside assessment-visible data.
+
+M0 does not need ground-truth coverage for all 42 checks.
+
+## T. M0 Supporting Findings
+
+The sample report may include a small number of supporting findings outside Metric Consistency if they materially improve realism.
+
+Examples:
+
+- freshness issue affecting one number;
+- duplicate or missing transaction affecting reconciliation;
+- undocumented reporting logic;
+- unclear metric ownership;
+- one limited PII example if needed for the secondary offer demonstration.
+
+These are supporting evidence.
+
+They must not expand M0 back into the full six-dimension product.
+
+## U. M0 Primary Output
+
+The most important M0 output is not the generator.
+
+It is: **A Presentable Sample Reporting Reliability Audit**
+
+The sample report should demonstrate the complete commercial value chain:
+
+```
+management question
+↓
+conflicting numbers
+↓
+source evidence
+↓
+reconciliation
+↓
+root cause
+↓
+business impact
+↓
+recommended definition
+↓
+owner / remediation
+↓
+re-check path
+```
+
+The report should be understandable to a CFO/COO while retaining enough evidence for a Head of Data to verify it.
+
+## V. M0 Engineering Cap
+
+M0 is deliberately capped.
+
+The objective is to reach a credible commercial demonstration with the least engineering necessary.
+
+Do not implement:
+
+- all 42 checks;
+- generic connector frameworks;
+- multi-database support;
+- production SaaS infrastructure;
+- continuous monitoring;
+- elaborate assessment orchestration;
+- automated remediation;
+- broad AI-readiness logic.
+
+If the sample report can be produced credibly before every imaginable benchmark feature is complete, stop.
+
+Further engineering requires new Product Owner authorization.
+
+## W. Revised v0.1 Proof Package
+
+The previous proof package is amended.
+
+The immediate v0.1 commercial proof package consists of:
+
+```
+1. Northstar Reporting Reliability demo environment
+2. Presentable sample Number Reconciliation Audit report
+3. One-page commercial offer sheet
+4. Minimal security/data-handling pack
+```
+
+A public landing page may exist, but it is not a priority validation asset.
+
+Do not spend significant effort on:
+
+- SEO;
+- branding polish;
+- elaborate public documentation;
+- public benchmark claims.
+
+The sample report is the primary credibility artifact.
+
+## X. Security / Data Handling Proof
+
+Before the first real proposal, Data Janitor should be able to explain:
+
+- read-only access;
+- client-run execution option;
+- data minimization;
+- evidence sampling;
+- local processing where possible;
+- credential handling;
+- what leaves the client environment;
+- what appears in the report.
+
+A simple security/data-handling pack may include:
+
+- architecture note;
+- example read-only PostgreSQL GRANT;
+- sampling/data-minimization policy;
+- basic NDA/DPA template references or requirements.
+
+This is commercial enablement, not enterprise compliance infrastructure.
+
+## Y. Software Role During Validation
+
+Until commercial validation succeeds:
+
+> The engine is an internal delivery accelerator.
+
+Its purpose is to reduce:
+
+- repetitive inspection;
+- reconciliation effort;
+- evidence collection;
+- report assembly.
+
+The engine should not be optimized for:
+
+- customer self-service;
+- multi-tenancy;
+- recurring monitoring;
+- broad integrations.
+
+Only automate work demonstrated to repeat in real engagements.
+
+## Z. Productization Destination
+
+The previous assumption that the destination is a continuous monitoring SaaS is withdrawn.
+
+Continuous monitoring is not currently the preferred product destination.
+
+The working productization path is:
+
+```
+fixed-scope audit
+↓
+repeatable internal engine
+↓
+paid periodic re-check
+↓
+versioned metric/rule history
+↓
+possible licensed rubric / re-check product
+```
+
+This path remains hypothetical.
+
+No software-business claim should be made until real engagements show reusable workflow and repeat demand.
+
+## AA. Commercial Validation Gate
+
+After the capped M0 proof package exists: **ENGINEERING PAUSES**
+
+The project must move into buyer validation.
+
+Further major engineering requires commercial evidence.
+
+The initial validation program should test:
+
+- willingness to pay;
+- whether buyers value diagnosis separately from remediation;
+- whether independent reconciliation changes a decision;
+- actual delivery hours;
+- data-access friction;
+- repeatability.
+
+The first phase should target approximately:
+
+```
+15 qualified buyer conversations
+```
+
+through the founder's warm network and one degree of introduction beyond it.
+
+## AB. Initial Commercial Success Gate
+
+The project may advance toward **GO — NARROW THE WEDGE** when there is evidence such as:
+
+- at least one paid engagement at or above approximately Rp30M with a deposit or PO;
+- a second commercial commitment from an unrelated organization;
+
+or an equivalently strong partner-led signal; and buyer evidence that the diagnosis itself has value rather than being accepted only as a free prelude to remediation.
+
+Exact commercial thresholds may be revised based on real evidence.
+
+## AC. Falsification
+
+The Product Owner should be willing to park the standalone assessment hypothesis if qualified buyer conversations consistently show that:
+
+- diagnosis is expected to be free;
+- buyers only pay for implementation;
+- reporting disputes are not important enough to fund;
+- internal teams can resolve the problem cheaply enough;
+- access friction makes the economics unattractive.
+
+Engineering success does not override commercial falsification.
+
+## AD. Work Explicitly Blocked Until Commercial Evidence
+
+The following remain blocked unless the Product Owner explicitly reauthorizes them after validation:
+
+```
+full 42-check implementation
+general Data Health SaaS
+customer-facing composite scoring platform
+web dashboard
+authentication
+multi-tenancy
+billing
+continuous monitoring
+BigQuery connector
+Snowflake connector
+broad connector framework
+automated remediation
+agentic functionality
+enterprise SSO
+AI Readiness platform
+peer/industry benchmarking
+```
+
+Do not build these speculatively.
+
+## AE. Founder Credibility Strategy
+
+The product should not pretend that the synthetic demo is equivalent to client experience.
+
+Current credibility assets are:
+
+```
+practitioner experience
++
+CDMP
++
+transparent methodology
++
+professional sample report
+```
+
+These are expected to be sufficient for warm conversations.
+
+They are not assumed sufficient for cold-market conversion.
+
+The next meaningful credibility assets must come from: real design-partner / paid engagements.
+
+Priority should be given to obtaining permission for:
+
+- anonymized quantified case studies;
+- testimonials;
+- reference calls.
+
+## AF. CDMP Positioning
+
+Existing CDMP restrictions remain.
+
+Safe positioning may describe the assessment as being performed by a CDMP-certified practitioner, where factually accurate.
+
+Do not imply:
+
+- DAMA endorsement;
+- DMBOK certification of Data Janitor;
+- externally validated scoring;
+- official industry standard status.
+
+## AG. Success Definition for the Amended v0.1
+
+The amended v0.1 is not successful because a 42-check engine exists.
+
+It is successful when:
+
+1. Northstar provides a plausible, realistic reporting-dispute scenario;
+2. the scenario can be inspected and reconciled using evidence;
+3. a professional sample audit communicates the problem and recommended decision clearly;
+4. the offer can be explained to a buyer in one sentence;
+5. the founder can take that proof into priced buyer conversations;
+6. commercial validation determines whether further engineering deserves founder attention.
+
+The decisive evidence comes from buyers, not from the completeness of the synthetic environment.
+
+## AH. Immediate Governance Action
+
+Before any M0 implementation begins:
+
+1. update `Current Assignment.md`;
+2. retire the previous broad M0 assignment;
+3. define the new bounded **M0 — Reporting Reliability Demo Environment**;
+4. reconcile existing benchmark/bootstrap artifacts against this amendment;
+5. preserve useful prior work only where it supports the revised M0;
+6. do not preserve previous architecture merely because it has already been written.
+
+No M0 implementation is authorized until this governance reconciliation is complete.
