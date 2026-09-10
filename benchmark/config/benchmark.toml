@@ -1,0 +1,28 @@
+# Canonical generation configuration for the Northstar Distribution benchmark.
+# Governed by "Current Assignment.md" (M0). The seed below is canonical for
+# v0.1; changing it invalidates ground truth and requires a new assignment.
+
+[generation]
+seed = 20260910
+as_of_date = "2026-09-01"
+history_months = 24
+output_dir = "benchmark/data"
+ground_truth_dir = "benchmark/ground_truth"
+format = "csv"
+
+# Target row counts for the clean base world, before defect injection.
+# Injection perturbs these slightly (duplicates add rows); QA asserts
+# approximate counts, not exact ones.
+[row_counts]
+customers = 5000
+products = 800
+orders = 60000
+order_items = 150000
+payments = 58000
+returns = 3500
+customer_export = 4500
+metric_definitions = 15
+pipeline_runs = 1200
+dataset_registry = 12
+sales_summary = 200
+customer_master_legacy = 4000
