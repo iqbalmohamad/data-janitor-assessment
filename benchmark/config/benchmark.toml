@@ -9,6 +9,45 @@ as_of_date = "2026-09-01"
 history_years = 3
 scenario = "revenue_margin_reconciliation"
 ground_truth_dir = "benchmark/ground_truth"
+data_dir = "benchmark/data"
+
+# Scenario parameters fixed by the Scenario Contract (benchmark/README.md,
+# Part II, SC-5 / SC-6 / SC-14; added per SC-18.1). These are contract
+# values, not tuning knobs: changing an instant, rate, or target is a
+# Scenario Contract change and goes back through the design gate.
+[scenario]
+audit_period = "2026-08"
+observation_at = "2026-09-08T09:00:00+07:00"
+utc_offset_hours = 7                     # WIB (Asia/Jakarta)
+vat_rate_pct = 11                        # fictional internal setting (SC-7)
+
+# Monthly close pattern, applied to every month of history (SC-5).
+# "Business day" is Mon-Fri of the month following the period.
+board_snapshot_business_day = 2          # board_pack_monthly runs
+board_snapshot_time = "08:15:00"
+credit_batch_business_days = [2, 3, 4]   # period-end back-dated credit batches
+close_business_day = 5                   # Finance close
+close_time = "17:30:00"
+
+# Lifecycle distributions (SC-6).
+invoice_lag_weights = [55, 25, 12, 8]    # business-day posting lag 0/1/2/3
+cancelled_order_rate_pct = 3
+return_received_lag_days_max = 45
+credit_lag_business_days_max = 10
+
+# Materiality targets for the audit period, both profiles (SC-14).
+# The generator meets these by construction and refuses to emit output
+# that misses them; tests assert them independently.
+[scenario.materiality]
+c_period_pct_of_rnmr = [2.5, 4.0]
+c_late_min_share_of_c_period = 0.35
+d1_min_pct_of_rnmr = 0.8
+d2_min_pct_of_rnmr = 0.8
+cost_basis_min_pct_of_k_act = 1.0
+revenue_pairwise_min_pct_of_rnmr = 0.5
+margin_pairwise_min_pp = 0.5
+fgm_pct_of_rnmr_band = [15.0, 25.0]
+aug_actual_cost_change_product_share_band_pct = [15, 25]
 
 # PostgreSQL is the canonical Northstar environment (SPEC.md Amendment
 # section O). Connection details are supplied via environment variable at

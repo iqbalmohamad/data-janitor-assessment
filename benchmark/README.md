@@ -19,7 +19,7 @@ environment — not an industry benchmark, and it is never described as one.
 |---|---|
 | Scenario Contract (Part II of this document) | **APPROVED — final for M0 implementation** |
 | Scenario Design Gate (Product Manager / Technical Lead review, criteria A–H) | **PASS** |
-| M0 implementation (generator, PostgreSQL schema, surfaces, sample report) | **Not started.** Scenario Design Gate PASSED — ready for M0 implementation authorization. Implementation proceeds on a fresh branch from post-merge `main`; none of it belongs in the Scenario Contract PR. |
+| M0 implementation (generator, PostgreSQL schema, surfaces, sample report) | **Implemented — ready for PM / Technical Lead review.** The generator (`generate.py`), PostgreSQL schema, three surfaces, fragmented evidence, hidden ground truth, test suite, and the sample audit implement Part II as written; the M0 completion gate remains the reviewer's decision. |
 
 The agreed process is:
 
