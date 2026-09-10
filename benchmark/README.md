@@ -109,8 +109,8 @@ triggered_by. ~24 months of run history for each pipeline.
 **dataset_name**, description (nullable), owner_team (nullable),
 business_owner (nullable), steward (nullable), source_system (nullable),
 is_source_of_truth (nullable/conflicting), lifecycle_status (nullable),
-freshness_sla_hours (nullable), last_documented_at (nullable),
-column_docs_pct. One row per Northstar dataset (including the deprecated
+freshness_sla_hours (nullable), retention_policy (nullable),
+last_documented_at (nullable), column_docs_pct. One row per Northstar dataset (including the deprecated
 ones). This is the main carrier of metadata/ownership defects.
 
 ### sales_summary *(optional, justified)*
@@ -128,6 +128,10 @@ Carrier of deprecated-dataset / unclear source-of-truth defects.
 
 Every defect below is injected deliberately, is deterministic under the
 canonical seed, and gets a ground-truth entry. IDs are stable; do not renumber.
+
+Defects target bounded slices: the untouched majority of every dataset is the
+clean control that `SPEC.md` §48 non-detection QA requires. Defects must not
+be pervasive.
 
 ### Data Quality (DQ)
 | ID | Defect | Mechanism |
@@ -160,6 +164,7 @@ canonical seed, and gets a ground-truth entry. IDs are stable; do not renumber.
 | GT-PII-001 | Unnecessary PII replication | Contact/address PII copied into `orders` ship fields and `customer_export` beyond need |
 | GT-PII-002 | Poorly governed export dataset | `customer_export` carries full PII, has no registry owner, no purpose, no lifecycle |
 | GT-PII-003 | PII in free text | Synthetic emails/phone numbers embedded in `customers.notes` for a small slice |
+| GT-PII-004 | Unclear retention | `retention_policy` NULL in the registry for the PII-bearing datasets (`customers`, `customer_export`, `customer_master_legacy`) |
 
 ### Ownership & Governance (OG)
 | ID | Defect | Mechanism |
@@ -237,7 +242,12 @@ Determinism rules (binding):
 - all dates computed relative to `as_of_date`; no `datetime.now()`,
   no `time.time()`, no `os.urandom`, no `uuid4`;
 - stdlib only for randomness; runtime dependency is `duckdb` (loading), and
-  the generator itself should need nothing beyond the standard library.
+  the generator itself should need nothing beyond the standard library;
+- reproducibility contract: byte-identical output for the same
+  code + config + seed on the same Python feature release; materially
+  identical across supported Python ≥3.12 (see `Current Assignment.md` §9 —
+  prefer `random()`/`getrandbits()` over distribution helpers where
+  practical, since only those carry a cross-version stability guarantee).
 
 Synthetic-data safety rules (binding):
 - names/companies assembled from fictional word lists written for this

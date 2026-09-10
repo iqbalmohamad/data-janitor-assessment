@@ -37,16 +37,15 @@ for the full M0 assignment.
 
 If the two conflict, `SPEC.md` wins.
 
-> **Note:** `SPEC.md` has not yet been placed in the repository by the Product
-> Owner. Until it lands, `Current Assignment.md` records the constraints the
-> bootstrap was built against; reconcile against `SPEC.md` as soon as it exists.
+`SPEC.md` is present at the repository root and the M0 assignment has been
+reconciled against it.
 
 ## Repository layout
 
 ```
 data-janitor-assessment/
 ├── README.md                 # this file — repository orientation
-├── SPEC.md                   # (pending) canonical product spec, owned by the PO
+├── SPEC.md                   # canonical product spec, owned by the PO
 ├── Current Assignment.md     # active milestone assignment (M0)
 ├── pyproject.toml            # Python project configuration
 ├── benchmark/                # Northstar Distribution synthetic benchmark

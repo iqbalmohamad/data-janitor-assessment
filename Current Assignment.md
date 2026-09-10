@@ -26,9 +26,9 @@ milestone stands on.
 
 ## 3. Canonical references
 
-1. `SPEC.md` — canonical product truth. **Currently absent from the
-   repository; the Product Owner must add it.** When it lands, reconcile this
-   assignment against it. On any conflict, `SPEC.md` wins.
+1. `SPEC.md` — canonical product truth, present at the repository root.
+   This assignment was reconciled against it (2026-09-10). On any conflict,
+   `SPEC.md` wins.
 2. `Current Assignment.md` (this document) — canonical bounded engineering
    assignment for M0.
 3. `benchmark/README.md` — benchmark architecture: schemas, defect catalog,
@@ -123,11 +123,15 @@ Full architecture: `benchmark/README.md`. Binding requirements:
   values, invalid business values, reconciliation mismatches; missing table
   descriptions, incomplete column documentation, missing source traceability,
   stale/deprecated datasets without lifecycle status; conflicting definitions
-  of Revenue, Active Customer, and Net Sales; unnecessary PII replication and
-  a poorly governed export dataset; ownerless critical datasets, missing
+  of Revenue, Active Customer, and Net Sales; unnecessary PII replication, a
+  poorly governed export dataset, and unclear retention expectations for
+  PII-bearing datasets; ownerless critical datasets, missing
   business ownership, unclear source of truth, obsolete-but-available
   datasets; stale datasets, failed pipelines, duplicate/reprocessed ingestion,
   irregular volume, missing freshness expectations.
+- **Clean control regions.** Defects are injected into bounded slices; the
+  untouched majority of each dataset is the clean control that `SPEC.md` §48
+  non-detection QA requires. Defects must not be pervasive.
 - **Scale.** Row counts per `benchmark/config/benchmark.toml` (order of
   10⁴–10⁵ rows in the largest tables). Comfortably laptop-scale; no
   infrastructure beyond Python + DuckDB.
@@ -154,8 +158,16 @@ Full architecture: `benchmark/README.md`. Binding requirements:
 
 - Canonical seed: **`20260910`**, stored once in
   `benchmark/config/benchmark.toml`, never hard-coded elsewhere.
-- Same code + same configuration + same seed ⇒ **byte-identical** generated
-  datasets and ground-truth manifest.
+- Same code + same configuration + same seed **on the same Python feature
+  release** (e.g. CPython 3.12.x) ⇒ **byte-identical** generated datasets and
+  ground-truth manifest. This is the property the determinism test asserts
+  (it regenerates within one interpreter).
+- Across different supported Python versions (≥3.12), output must remain
+  **materially identical** per `SPEC.md` §35/§48. CPython contracts
+  cross-version stability only for `random.random()` and compatible seeding,
+  so bit-level identity across future feature releases is not promised; to
+  minimize drift, prefer stable primitives (`random()`, `getrandbits()`) over
+  distribution helpers (`sample`, `choices`, `shuffle`) where practical.
 - No wall-clock reads in generated content: all dates/timestamps derive from
   the configured simulation anchor date (`as_of_date` in config).
 - No iteration over unordered structures where order affects output; no
@@ -197,7 +209,8 @@ M0 is done when all of the following hold and are verified:
 
 1. Northstar benchmark generation runs locally on Python 3.12+.
 2. Generation starts from code + config, not manually maintained bulk data.
-3. Re-running with seed `20260910` reproduces identical output.
+3. Re-running with seed `20260910` reproduces byte-identical output on the
+   same interpreter (per the §9 contract).
 4. All required benchmark datasets exist (§7).
 5. Synthetic data contains no real personal or employer information.
 6. Known intentional defects cover all six assessment dimensions.
@@ -243,8 +256,9 @@ An engineer implementing M0 starts from this baseline and should:
 5. Update `README.md` usage instructions to match reality.
 6. Keep every change inside §6's file list; anything outside it needs a new
    assignment.
-7. When `SPEC.md` lands, reconcile: if it contradicts this assignment,
-   `SPEC.md` wins — raise the conflict, don't silently diverge.
+7. This assignment is reconciled against `SPEC.md` as of 2026-09-10. If a
+   later `SPEC.md` revision contradicts it, `SPEC.md` wins — raise the
+   conflict, don't silently diverge.
 
 Deliverable of the handoff: a branch/PR against `main` in which the §11
 Definition of Done is demonstrably satisfied, with test output included in
