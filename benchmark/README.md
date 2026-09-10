@@ -570,7 +570,7 @@ mismatch".
 | **definition** (semantic) | The surfaces measure different, individually coherent concepts. Would persist even if all surfaces were computed at the same instant from complete data. Legitimate. | period basis (delivery-dated vs posting-dated); gross-of-returns vs net-of-credit-notes |
 | **timing** (cutoff / snapshot) | The same concept computed from snapshots taken at different instants, with period-relevant transactions posted in between. Legitimate as a fact; a freshness finding as a practice. | the 2–4 Sep back-dated credit notes missing from the 2 Sep Board snapshot |
 | **cost basis** | Margin computed on standard vs actual cost. Legitimate. | Σ (actual − standard) cost of August deliveries |
-| **defect** | Logic that is incoherent under any definition. Must be corrected. | Board deducts VAT-inclusive credit totals from an ex-VAT figure; Board nets returns from revenue but not from cost |
+| **defect** | Logic that is incoherent under any definition. Must be corrected. | Board deducts VAT-inclusive credit totals from an ex-VAT figure; Board nets the credits it can see from revenue but never reverses their cost |
 
 ### SC-10.1 Bridge notation
 
@@ -584,7 +584,11 @@ v        VAT rate (0.11)
 D1       merchandise of August deliveries whose invoices posted in September   (in DSV, not in RNMR)
 D2       merchandise of July deliveries whose invoices posted in August        (in RNMR, not in DSV)
 K_post   actual COGS on invoice lines with accounting_period = P
-R_period COGS reversal on credit notes with accounting_period = P
+R_period COGS reversal on credit notes with accounting_period = P (all, incl. back-dated)
+R_early  the subset of R_period on credit notes already created at the Board snapshot
+         (created_at <= 2 Sep 08:15) — the cost side of the credits the Board did net
+R_late   the subset of R_period on credit notes created after the Board snapshot
+         (the 2–4 Sep batches) — the cost side of C_late;   R_period = R_early + R_late
 K1, K2   actual-cost analogues of D1, D2
 K_act    actual cost of August deliveries (delivery basis) = K_post + K1 − K2
 K_std    standard cost of August deliveries (delivery basis)
@@ -633,14 +637,26 @@ FGM
   + (BR − RNMR)                [the revenue bridge above, by category]
   − (K1 − K2)                  definition   period basis on cost
   − (K_std − K_act)            cost basis   standard vs actual
-  − R_period                   defect       revenue is net of returns but cost is not reversed
+  − R_late                     timing       cost side of the 2–4 Sep credits: neither the credit nor its
+                                            COGS reversal existed at the 2 Sep snapshot
+  − R_early                    defect       Board Revenue already nets these credits, but Board Gross
+                                            Margin never reverses their cost
 = BGM
 ```
 
-Note the teaching point the sample report must make: the amount `R_period`
-is **legitimate** in the Sales bridge and a **defect** in the Board bridge,
-because correctness is about internal consistency with the surface's own
-definition, not about the number itself.
+Two teaching points the sample report must make:
+
+- The same amount `R_period` is **legitimate** in the Sales bridge (Sales
+  is gross of returns, so not reversing cost is consistent) while in the
+  Board bridge it splits into a **defect** (`R_early`) and a **timing**
+  difference (`R_late`). Correctness is about internal consistency with the
+  surface's own definition and snapshot, not about the number itself.
+- The Board's timing and defect attributions must be consistent between
+  the two metrics: the credits the Board *saw* (`C_period − C_late`) are
+  the ones whose VAT is wrongly deducted **and** whose cost is wrongly not
+  reversed; the credits it *did not see* (`C_late`, `R_late`) are timing
+  on both lines. A decomposition that calls a cost line a defect for a
+  credit the Board could not have known about is wrong.
 
 ### SC-10.3 Worked illustration (not ground truth)
 
@@ -650,14 +666,22 @@ produces the real values.
 ```
 G_post = 100,000   C_period = 3,200 (C_late = 1,400)   v = 0.11
 D1 = 2,600   D2 = 2,100
-K_post = 81,000   R_period = 2,650   K1 = 2,130   K2 = 1,720   K_std = 80,600
+K_post = 81,000   R_period = 2,650 (R_early = 1,490, R_late = 1,160)
+K1 = 2,130   K2 = 1,720   K_std = 80,600
 
 RNMR = 96,800        ARC = 78,350        FGM = 18,450   (19.1%)
 DSV  = 100,500       K_std = 80,600      CM  = 19,900   (19.8%)
 BR   = 100,500 − 1,800 × 1.11 = 98,502   BGM = 17,902   (18.2%)
 
 BR − RNMR = 1,702 = (D1 − D2) 500 + C_late 1,400 − v(C_period − C_late) 198
-BGM − FGM = −548 = 1,702 − (K1 − K2) 410 − (K_std − K_act) (−810) − R_period 2,650
+BGM − FGM = −548 = 1,702 − (K1 − K2) 410 − (K_std − K_act) (−810) − R_late 1,160 − R_early 1,490
+
+Gross Margin, Finance → Board, totalled by category:
+  definition   (D1 − D2) 500 − (K1 − K2) 410            =    +90
+  timing       C_late 1,400 − R_late 1,160              =   +240
+  cost basis   −(K_std − K_act) = +810                  =   +810
+  defect       −198 − R_early 1,490                     = −1,688
+  total                                                 =   −548  ✓
 ```
 
 Three "Revenue" numbers (96,800 / 100,500 / 98,502) and three margin
@@ -774,7 +798,8 @@ Required content:
   (DSV, K_std, CM), Board as reported (BR, BGM);
 - every bridge line of §SC-10.2 with amount and category
   (`definition` / `timing` / `cost_basis` / `defect`), and the intermediate
-  quantities (`G_post`, `C_period`, `C_late`, `D1`, `D2`, `K_*`, `R_period`);
+  quantities (`G_post`, `C_period`, `C_late`, `D1`, `D2`, `K_*`, `R_period`,
+  `R_early`, `R_late`);
 - the actual Board defect described in words, with the two mechanically
   quantifiable sub-lines;
 - recommended basis per decision context (§SC-4), and the presentation
@@ -806,6 +831,13 @@ generation timestamps):
       {"line": "period_basis_delivery_vs_posting", "category": "definition", "amount": 500000000},
       {"line": "back_dated_credit_notes_after_snapshot", "category": "timing", "amount": 1400000000},
       {"line": "vat_inclusive_credit_deduction", "category": "defect", "amount": -198000000}
+    ],
+    "gross_margin_finance_to_board": [
+      {"line": "revenue_bridge_carried", "category": "by_line", "amount": 1702000000},
+      {"line": "period_basis_on_cost", "category": "definition", "amount": -410000000},
+      {"line": "standard_vs_actual_cost", "category": "cost_basis", "amount": 810000000},
+      {"line": "cogs_reversal_on_credits_after_snapshot", "category": "timing", "amount": -1160000000},
+      {"line": "cogs_not_reversed_on_credits_seen_by_board", "category": "defect", "amount": -1490000000}
     ]
   },
   "recommended_basis": {
@@ -873,6 +905,11 @@ Tests assert them on both profiles:
 | Pairwise revenue differences (RNMR, DSV, BR) | each ≥ 0.5% of RNMR; all three values distinct |
 | Pairwise margin-% differences (FGM, CM, BGM) | each ≥ 0.5 percentage points |
 | Gross margin level | FGM between 15% and 25% of RNMR |
+
+`R_early` and `R_late` are derived by the same snapshot split as `C_late`
+(credit-note `created_at` relative to the Board `generated_at`), so they
+inherit the `C_late` share target and need no separate row; tests that
+assert the Board margin bridge must assert both lines and their sum.
 
 ## SC-15. What the M0 audit must be able to prove
 
@@ -968,7 +1005,9 @@ handle; they are listed so they are not rediscovered.
 5. **Snapshot reproduction tests** (assignment §10.3) must reproduce the
    Board figure with the `created_at ≤ generated_at` restriction, the
    Finance row by re-running its SQL at the horizon, and the Sales view by
-   definition.
+   definition. The same restriction is what splits `C_period` into
+   `C_period − C_late` / `C_late` and `R_period` into `R_early` / `R_late`;
+   the ground truth and the bridge tests must use one shared split.
 
 ---
 
