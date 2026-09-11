@@ -19,7 +19,7 @@ environment — not an industry benchmark, and it is never described as one.
 |---|---|
 | Scenario Contract (Part II of this document) | **APPROVED — final for M0 implementation** |
 | Scenario Design Gate (Product Manager / Technical Lead review, criteria A–H) | **PASS** |
-| M0 implementation (generator, PostgreSQL schema, surfaces, sample report) | **IMPLEMENTATION COMPLETE — READY FOR PM / TECHNICAL LEAD REVIEW.** Implemented on a fresh branch from the post-merge `main`. The M0 completion gate remains with the Product Manager / Technical Lead. |
+| M0 implementation (generator, PostgreSQL schema, surfaces, sample report) | **M0 COMPLETE — PM / TECHNICAL LEAD PASS.** PR #5 merged; engineering paused pending commercial validation (SPEC.md Amendment 001, §AA). Closeout evidence is recorded in `Current Assignment.md`. |
 
 The agreed process is:
 
@@ -28,14 +28,16 @@ Scenario Contract (this document, Part II)
         ↓
 Scenario Design Gate — Product Manager / Technical Lead review
         ↓
-M0 implementation authorization (status updated here and in Current Assignment.md)
+M0 implementation authorization → implementation → M0 completion gate PASS
+        ↓
+Engineering paused → commercial validation led by the Product Owner
 ```
 
-The gate has passed and the contract is final. An implementation engineer
-starts from this contract as written: everything in Part II is binding on
-the implementation, so it can proceed **without rediscovering or
-redesigning the scenario**. Any change to the contract goes back through
-the gate rather than being made during implementation.
+The Scenario Design Gate and M0 completion gate have passed; the contract
+remains final. Everything in Part II remains binding on the completed
+implementation. Any change to the contract goes back through the gate.
+Further engineering, including M1, requires explicit Product Owner
+reauthorization after commercial validation.
 
 This document is design documentation. It is **not** part of the
 assessment-visible environment (see §SC-12) — it explains the planted

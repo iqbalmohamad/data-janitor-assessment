@@ -1,8 +1,9 @@
 # Current Assignment — M0: Reporting Reliability Demo Environment
 
-**Status:** IMPLEMENTATION COMPLETE — READY FOR PM / TECHNICAL LEAD REVIEW
-(Scenario Contract remains approved and final; the M0 completion gate is
-reserved for Product Manager / Technical Lead review.)
+**Status:** M0 COMPLETE — PM / TECHNICAL LEAD PASS
+**Engineering:** Paused pending commercial validation (SPEC.md Amendment 001, §AA).
+(Scenario Contract remains approved and final; M0 completion gate passed
+for reviewed head `23d9dba25a358aa10b504a33e037eb6da4b2d5de`.)
 **Milestone:** M0 (revised)
 **Assignment owner:** Technical Lead
 **Canonical seed:** `20260910`
@@ -15,13 +16,16 @@ reserved for Product Manager / Technical Lead review.)
 > discard it.
 
 > **Process gate.** The M0 scenario is fixed by the Scenario Contract
-> (`benchmark/README.md`, Part II, sections SC-1 to SC-18). The agreed
-> sequence is: Scenario Contract → Scenario Design Gate → M0 implementation
-> authorization. The Scenario Design Gate has **PASSED** (Product Manager /
-> Technical Lead review, criteria A–H). M0 implementation work (generator,
-> schema, surfaces, sample report) is authorized to begin on a fresh branch
-> created from `main` after the Scenario Contract PR merges; it is not part
-> of that PR.
+> (`benchmark/README.md`, Part II, sections SC-1 to SC-18). The
+> Scenario Design Gate and M0 completion gate have **PASSED**.
+> [PR #5](https://github.com/iqbalmohamad/data-janitor-assessment/pull/5) merged
+> on 2026-09-11 as `467012a917c815ed4538ea7091ffd2c6d1370ae4`;
+> obsolete draft PR #4 is closed. Final remediation QA reported
+> **57 passed, 5 intentional skips** across PostgreSQL/offline smoke and demo.
+> The Product Owner's next phase is commercial validation using the sample
+> audit. Further engineering, including M1, requires explicit Product Owner
+> reauthorization after commercial validation; the assignment below records
+> the completed M0 scope.
 
 ---
 

@@ -10,7 +10,8 @@ August 2026 Revenue/Gross Margin dispute. Finance is a defensible P&L view;
 Sales is a defensible commercial view; the circulated Board pack contains the
 hybrid reporting defect. PostgreSQL is Northstar's canonical environment.
 
-**IMPLEMENTATION COMPLETE - READY FOR PM / TECHNICAL LEAD REVIEW.**
+**M0 COMPLETE — PM / TECHNICAL LEAD PASS.**
+Engineering is paused pending commercial validation (Amendment 001, §AA).
 
 Start with the [six-page sample audit](report/samples/northstar-august-2026-audit.pdf)
 or its [traceable Markdown edition](report/samples/northstar-august-2026-audit.md).
@@ -24,8 +25,10 @@ Both are explicitly synthetic demonstrations, not client engagements.
 4. [Generation configuration](benchmark/config/benchmark.toml).
 
 No scoring engine, AI Readiness, connector framework, SaaS, continuous monitoring,
-remediation execution or generic report engine is implemented. PM / Technical
-Lead review determines the M0 gate; engineering does not self-declare M0 PASS.
+remediation execution or generic report engine is implemented. The PM / Technical
+Lead M0 gate has passed; [Current Assignment.md](Current%20Assignment.md) records
+the closeout. Further engineering requires explicit Product Owner reauthorization
+after commercial validation.
 
 ## Local installation
 
@@ -134,7 +137,13 @@ artifact operation; no report-generation framework is part of this repository.
 
 ## Exact local QA setup used
 
-Executed acceptance results: full smoke/demo + PostgreSQL/offline suite,
+Final remediation acceptance at `23d9dba25a358aa10b504a33e037eb6da4b2d5de`:
+**57 passed, 5 intentional skips** in 805 seconds across smoke/demo and
+PostgreSQL/offline; canonical demo CLI on PostgreSQL **16.13** exited 0 in
+246 seconds. These are the executed handoff results accepted by PM / Technical
+Lead review and recorded in [merged PR #5](https://github.com/iqbalmohamad/data-janitor-assessment/pull/5).
+
+Historical initial implementation QA (before final remediation): full smoke/demo + PostgreSQL/offline suite,
 **49 passed, 5 intentional skips**; service-free run, **22 passed, 12 skips**;
 final report presentation re-check against a fresh PostgreSQL demo, **2 passed**.
 The full run includes materiality, lifecycle, historical reproduction,
