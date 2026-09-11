@@ -13,6 +13,8 @@ hybrid reporting defect. PostgreSQL is Northstar's canonical environment.
 **M0 COMPLETE — PM / TECHNICAL LEAD PASS.**
 Engineering is paused pending commercial validation (Amendment 001, §AA).
 
+The active non-engineering workstream is [Commercial Validation Phase 1](Commercial%20Validation%20Phase%201.md): 15 qualified buyer conversations; package pending Product Owner review.
+
 Start with the [six-page sample audit](report/samples/northstar-august-2026-audit.pdf)
 or its [traceable Markdown edition](report/samples/northstar-august-2026-audit.md).
 Both are explicitly synthetic demonstrations, not client engagements.

@@ -8,6 +8,8 @@ for reviewed head `23d9dba25a358aa10b504a33e037eb6da4b2d5de`.)
 **Assignment owner:** Technical Lead
 **Canonical seed:** `20260910`
 
+**Active non-engineering assignment:** [Commercial Validation Phase 1](Commercial%20Validation%20Phase%201.md). This document retains the completed M0 engineering scope; engineering remains paused.
+
 > **Supersession notice.** This document replaces the prior M0 assignment
 > ("M0 — Reproducible Broken Company," covering all six assessment
 > dimensions), which is retired per `SPEC.md` **Amendment 001** (effective
