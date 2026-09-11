@@ -13,8 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from benchmark.generate import (COMMENTS, ROOT, TABLES, calendar, columns, generate_core,
-                                instant, load_config, period, surface_sql)
+from benchmark.generate import (COMMENTS, ROOT, SURFACE_PARAMETERS, TABLES, bind, calendar, columns,
+                                generate_core, instant, load_config, period, stamp, statements, surface_sql)
 from benchmark.load_duckdb import load
 from benchmark.scenario.reconcile import inspect_evidence, verify_scenario, manifest
 
@@ -149,18 +149,24 @@ def test_amounts_and_cost_history(dataset):
 
 def test_history_snapshot_and_jobs(dataset):
     conn, cfg, *_ = dataset
+    horizon = instant(cfg["scenario"]["observation_at"])
     finance = conn.execute("SELECT * FROM finance.monthly_pnl_extract ORDER BY accounting_period").fetchall()
-    assert finance == conn.execute(surface_sql(cfg, "finance_revenue.sql")).fetchall()
-    # Latest complete state changes no closed Finance values (only the query's label timestamp differs).
-    current = conn.execute(surface_sql(cfg, "finance_revenue.sql", at_horizon=True)).fetchall()
-    assert [r[:10] for r in finance] == [r[:10] for r in current]
     historical = conn.execute("SELECT * FROM management.board_kpi_monthly ORDER BY period,kpi").fetchall()
-    assert historical == conn.execute(surface_sql(cfg, "board_pack.sql")).fetchall()
-    horizon_rows = conn.execute(surface_sql(cfg, "board_pack.sql", at_horizon=True)).fetchall()
     assert len(finance) == len(calendar(cfg)) and len(historical) == 3*len(finance)
-    for old, new in zip(historical, horizon_rows):
-        assert old[:2] == new[:2]
-        assert old[2] != new[2], "Recurring monthly credit batches should change the rerun"
+    for index, (month, board, close) in enumerate(calendar(cfg)):
+        p = period(month)
+        # Every stored close row is one run of the committed Finance query at its close instant.
+        assert conn.execute(bind("finance_revenue.sql"), {"period": p, "closed_at": close}).fetchall() == [finance[index]]
+        # Latest complete state changes no closed Finance values (only the query's label timestamp differs).
+        current = conn.execute(bind("finance_revenue.sql"), {"period": p, "closed_at": horizon}).fetchone()
+        assert current[:10] == finance[index][:10]
+        # Every stored pack is one run of the committed Board query at its snapshot; a horizon rerun differs.
+        stored = historical[3*index:3*index+3]
+        assert conn.execute(bind("board_pack.sql"), {"period": p, "generated_at": board}).fetchall() == stored
+        rerun = conn.execute(bind("board_pack.sql"), {"period": p, "generated_at": horizon}).fetchall()
+        for old, new in zip(stored, rerun):
+            assert old[:2] == new[:2]
+            assert old[2] != new[2], "Recurring monthly credit batches should change the rerun"
     zero(conn, "SELECT COUNT(*) FROM analytics.etl_job_runs WHERE status<>'success' OR started_at>completed_at")
     for month, board, close in calendar(cfg):
         p = period(month)
@@ -190,6 +196,74 @@ def test_history_snapshot_and_jobs(dataset):
     for row in export:
         expected = conn.execute("SELECT value,generated_at FROM management.board_kpi_monthly WHERE period=%s AND kpi=%s", (p,row["kpi"])).fetchone()
         assert Decimal(row["value"]) == expected[0] and row["generated_at"] == str(expected[1])
+
+
+def test_operational_sql_single_run_equivalence(dataset):
+    """The evidence SQL is genuine single-run operational SQL (SC-9, SC-12): one
+    nightly refresh, one Finance close and one pack run each reproduce exactly the
+    canonical rows they are responsible for, executed as committed."""
+    conn, cfg, *_ = dataset
+    s = cfg["scenario"]
+    p = s["audit_period"]
+    script = statements(bind("sales_dashboard.sql"))
+    refresh = [text for keyword, text in script if keyword in ("DELETE", "INSERT")]
+    insert = [text for keyword, text in script if keyword == "INSERT"]
+    assert len(refresh) == 2 and len(insert) == 1
+    dates = [row[0] for row in conn.execute("SELECT DISTINCT delivery_date FROM analytics.delivered_sales ORDER BY 1").fetchall()]
+    august = [d for d in dates if period(d) == p]
+    assert august
+    total = conn.execute("SELECT COUNT(*) FROM analytics.delivered_sales").fetchone()[0]
+    slice_sql = "SELECT * FROM analytics.delivered_sales WHERE delivery_date=%s ORDER BY order_item_id"
+    for run_date in (dates[0], august[-1], dates[-1]):
+        before = conn.execute(slice_sql, (run_date,)).fetchall()
+        assert before
+        loaded_at = before[0][12]
+        assert loaded_at == stamp(run_date + timedelta(days=1), 2, 10)
+        conn.execute("BEGIN")
+        try:
+            # Replaying the nightly refresh for a run date replaces its slice; nothing is duplicated.
+            for statement in refresh:
+                conn.execute(statement, {"run_date": run_date, "loaded_at": loaded_at})
+            assert conn.execute(slice_sql, (run_date,)).fetchall() == before
+            assert conn.execute("SELECT COUNT(*) FROM analytics.delivered_sales").fetchone()[0] == total
+            # The insert alone rebuilds the slice from core rows once it is removed.
+            conn.execute("DELETE FROM analytics.delivered_sales WHERE delivery_date=%s", (run_date,))
+            assert conn.execute("SELECT COUNT(*) FROM analytics.delivered_sales").fetchone()[0] == total - len(before)
+            conn.execute(insert[0], {"run_date": run_date, "loaded_at": loaded_at})
+            assert conn.execute(slice_sql, (run_date,)).fetchall() == before
+        finally:
+            conn.execute("ROLLBACK")
+    assert conn.execute("SELECT COUNT(*) FROM analytics.delivered_sales").fetchone()[0] == total
+    # August is complete at the fixed T+1 completion on 1 September.
+    latest = conn.execute("SELECT MAX(loaded_at) FROM analytics.delivered_sales WHERE SUBSTRING(CAST(delivery_date AS VARCHAR),1,7)=%s", (p,)).fetchone()[0]
+    assert latest == instant(s["sales_complete_at"])
+    # One Finance close for the audit period equals the stored extract row.
+    stored_finance = conn.execute("SELECT * FROM finance.monthly_pnl_extract WHERE accounting_period=%s", (p,)).fetchall()
+    assert len(stored_finance) == 1
+    assert conn.execute(bind("finance_revenue.sql"), {"period": p, "closed_at": instant(s["finance_close_at"])}).fetchall() == stored_finance
+    # One pack run at the historical snapshot equals the circulated rows; the horizon rerun differs.
+    stored_board = conn.execute("SELECT * FROM management.board_kpi_monthly WHERE period=%s ORDER BY kpi", (p,)).fetchall()
+    assert len(stored_board) == 3
+    assert conn.execute(bind("board_pack.sql"), {"period": p, "generated_at": instant(s["board_snapshot_at"])}).fetchall() == stored_board
+    rerun = {row[1]: row[2] for row in conn.execute(bind("board_pack.sql"), {"period": p, "generated_at": instant(s["observation_at"])}).fetchall()}
+    stored = {row[1]: row[2] for row in stored_board}
+    assert rerun["Revenue"] != stored["Revenue"] and rerun["Gross Margin"] != stored["Gross Margin"]
+
+
+def test_operational_evidence_artifacts(dataset):
+    """Evidence SQL is the committed operational query verbatim: single-run,
+    parameterized, with no rendered replay calendar or historical scaffold."""
+    _, _, _, data, *_ = dataset
+    for name, parameters in SURFACE_PARAMETERS.items():
+        text = (data / "evidence" / name).read_text(encoding="utf-8")
+        assert text == surface_sql(name)
+        for parameter in parameters:
+            assert re.search(rf":{parameter}\b", text), (name, parameter)
+        assert "{{" not in text and "VALUES" not in text.upper()
+        assert "TIMESTAMP '" not in text and not re.search(r"\d{4}-\d{2}-\d{2}", text)
+    assert [keyword for keyword, _ in statements(surface_sql("sales_dashboard.sql"))] == ["DELETE", "INSERT", "CREATE"]
+    assert len(statements(surface_sql("finance_revenue.sql"))) == 1
+    assert len(statements(surface_sql("board_pack.sql"))) == 1
 
 
 def test_reconciliation_manifest_and_materiality(dataset):

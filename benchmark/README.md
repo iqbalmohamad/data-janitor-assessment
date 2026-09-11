@@ -1072,9 +1072,14 @@ never Northstar's canonical environment (see §3).
 ## 15. Implemented M0 usage notes
 
 `generate.py` streams the operational CSVs, bulk-loads a clean PostgreSQL
-target, validates its foreign keys, executes the three surface SQL sources,
-attaches comments and job history, writes exactly the SC-12 evidence files,
-and writes the hidden QA manifest last. Existing target schemas are preserved
+target, validates its foreign keys, replays the history by executing the three
+committed operational queries (`scenario/*.sql`: one nightly refresh per run
+date, one Finance close per period, one Board pack run per period at its
+snapshot instant), copies those files verbatim as evidence together with the
+notes and the pack export, attaches comments and job history, and writes the
+hidden QA manifest last. The evidence SQL is therefore the single-run query
+the fictional team runs, not a historical replay script; tests replay one run
+of each and require it to reproduce the stored rows. Existing target schemas are preserved
 by refusing the load; use a new empty disposable database for another run.
 
 `scenario/reconcile.py` independently reconstructs the amounts from database

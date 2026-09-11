@@ -92,9 +92,16 @@ baseline before the September history begins.
 
 PostgreSQL COPY loads operational data before validating the foreign keys in
 bulk. All 17 relationships are present and validated in the resulting canonical
-schema. Each reporting surface is then populated by its own supplied SQL; wrong
-Board values are never inserted as chosen literals. Historical Finance close and
-Board snapshot rows cover all 36 months, with successful nightly/monthly job runs.
+schema. The three query files under `benchmark/scenario/` are the operational
+SQL the fictional teams run - one nightly fact refresh for a single run date,
+one Finance close for a single period, one Board pack run for a single period
+at its run instant - and they are copied verbatim into the evidence directory.
+The generator materializes the 36-month history by executing that same
+committed text once per nightly load, close and pack run (a bounded
+deterministic replay; nothing is rendered into the evidence files). Wrong Board
+values are never inserted as chosen literals. Tests replay one run of each query
+and require it to reproduce the stored rows exactly; nightly/monthly job runs
+are all recorded as successful.
 
 ## Acceptance tests
 

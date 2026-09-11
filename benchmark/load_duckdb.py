@@ -1,5 +1,6 @@
 """Internal offline test mirror. Northstar itself is PostgreSQL."""
 
+import re
 from pathlib import Path
 
 if __name__ == "__main__":
@@ -16,7 +17,14 @@ class LocalMirror:
         self.connection = connection
 
     def execute(self, sql, params=None):
-        return self.connection.execute(sql.replace("%s", "?"), params) if params is not None else self.connection.execute(sql)
+        if params is None:
+            return self.connection.execute(sql)
+        if isinstance(params, dict):
+            # psycopg %(name)s placeholders (with %% escapes) become DuckDB $name;
+            # DuckDB accepts only the names a statement actually references.
+            named = re.sub(r"%\((\w+)\)s", r"$\1", sql).replace("%%", "%")
+            return self.connection.execute(named, {k: v for k, v in params.items() if f"${k}" in named})
+        return self.connection.execute(sql.replace("%s", "?"), params)
 
 
 def load(cfg, profile, directory, database=":memory:"):

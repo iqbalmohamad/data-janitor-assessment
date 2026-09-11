@@ -390,23 +390,70 @@ def validate_foreign_keys(conn):
                 conn.execute(f"ALTER TABLE core.{table} ADD FOREIGN KEY ({column.split()[0]}) REFERENCES {match[1]}({match[2]})")
 
 
-def surface_sql(cfg, name, at_horizon=False):
-    rows = []
-    for month, board, close in calendar(cfg):
-        when = close if name == "finance_revenue.sql" else board
-        if at_horizon:
-            when = instant(cfg["scenario"]["observation_at"])
-        rows.append(f"('{period(month)}', TIMESTAMP '{when.isoformat(sep=' ')}')")
-    return (SOURCE / name).read_text(encoding="utf-8").replace("{{calendar}}", ",\n".join(rows))
+# Each assessment-visible query is a single-run operational artifact bound to
+# exactly these parameters. The generator materializes history by executing
+# that same committed text once per close, per pack run and per nightly load.
+SURFACE_PARAMETERS = {
+    "finance_revenue.sql": ("period", "closed_at"),
+    "board_pack.sql": ("period", "generated_at"),
+    "sales_dashboard.sql": ("run_date", "loaded_at"),
+}
+
+
+def surface_sql(name):
+    """The committed operational query, byte for byte; it is also the evidence file."""
+    return (SOURCE / name).read_text(encoding="utf-8")
+
+
+def bind(name):
+    """Executable form of the same text: each :parameter becomes a driver placeholder."""
+    text = surface_sql(name).replace("%", "%%")
+    for parameter in SURFACE_PARAMETERS[name]:
+        pattern = rf":{parameter}\b"
+        if not re.search(pattern, text):
+            raise ValueError(f"{name} must bind :{parameter}")
+        text = re.sub(pattern, f"%({parameter})s", text)
+    return text
+
+
+def statements(text):
+    """(first keyword, statement) pairs of a script; comments stay attached."""
+    result = []
+    for chunk in text.split(";\n"):
+        body = [line.strip() for line in chunk.strip().splitlines()
+                if line.strip() and not line.strip().startswith("--")]
+        if body:
+            result.append((body[0].split()[0].upper(), chunk.strip()))
+    return result
 
 
 def materialize(conn, cfg):
-    conn.execute(surface_sql(cfg, "sales_dashboard.sql"))
-    conn.execute("INSERT INTO management.board_kpi_monthly " + surface_sql(cfg, "board_pack.sql"))
-    conn.execute("INSERT INTO finance.monthly_pnl_extract " + surface_sql(cfg, "finance_revenue.sql"))
-    conn.execute(COMMENTS)
     day = calendar(cfg)[0][0] + timedelta(days=1)
     horizon = instant(cfg["scenario"]["observation_at"])
+    script = statements(bind("sales_dashboard.sql"))
+    refresh = [text for keyword, text in script if keyword in ("DELETE", "INSERT")]
+    view = [text for keyword, text in script if keyword == "CREATE"]
+    if len(refresh) != 2 or len(view) != 1:
+        raise ValueError("sales_dashboard.sql must hold the nightly refresh and the view")
+    delivered = {row[0] for row in conn.execute("SELECT DISTINCT delivery_date FROM core.orders WHERE status='delivered'").fetchall()}
+    # Historical replay of the nightly job: the committed refresh runs once per
+    # calendar day for the previous day's deliveries, stamped with that run's
+    # completion time. Days without deliveries would load nothing and are skipped.
+    while stamp(day, 2, 10) <= horizon:
+        run_date = day - timedelta(days=1)
+        if run_date in delivered:
+            for statement in refresh:
+                conn.execute(statement, {"run_date": run_date, "loaded_at": stamp(day, 2, 10)})
+        day += timedelta(days=1)
+    conn.execute(view[0])
+    for month, board, close in calendar(cfg):
+        # One pack run per month at its snapshot instant; one close per period.
+        conn.execute("INSERT INTO management.board_kpi_monthly " + bind("board_pack.sql"),
+                     {"period": period(month), "generated_at": board})
+        conn.execute("INSERT INTO finance.monthly_pnl_extract " + bind("finance_revenue.sql"),
+                     {"period": period(month), "closed_at": close})
+    conn.execute(COMMENTS)
+    day = calendar(cfg)[0][0] + timedelta(days=1)
     # The append-only T+1 fact retains its original load timestamp.
     daily = dict(conn.execute("SELECT CAST(loaded_at AS DATE), COUNT(*) FROM analytics.delivered_sales GROUP BY 1").fetchall())
     jobs = []
@@ -430,8 +477,8 @@ def write_evidence(conn, cfg, directory):
     if set(p.name for p in directory.iterdir()) - expected:
         raise ValueError("Evidence directory contains files outside SC-12")
     for name in sorted(expected - {"august_board_pack.csv"}):
-        content = surface_sql(cfg, name) if name.endswith(".sql") else (SOURCE / name).read_text(encoding="utf-8")
-        (directory / name).write_text(content, encoding="utf-8", newline="\n")
+        # Evidence is the committed source verbatim; nothing is rendered into it.
+        (directory / name).write_text((SOURCE / name).read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
     with (directory / "august_board_pack.csv").open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, lineterminator="\n")
         writer.writerow(("period", "kpi", "value", "generated_at"))
@@ -465,6 +512,7 @@ def generate(cfg, profile, data_dir=None, truth_dir=None):
         validate_foreign_keys(conn)
         conn.execute("CREATE INDEX ON core.credit_notes(accounting_period,created_at)")
         conn.execute("CREATE INDEX ON core.invoices(accounting_period)")
+        conn.execute("CREATE INDEX ON core.orders(delivery_date)")
         conn.execute("ANALYZE")
         materialize(conn, cfg)
         write_evidence(conn, cfg, data_dir / "evidence")
