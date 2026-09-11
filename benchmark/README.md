@@ -19,7 +19,7 @@ environment — not an industry benchmark, and it is never described as one.
 |---|---|
 | Scenario Contract (Part II of this document) | **APPROVED — final for M0 implementation** |
 | Scenario Design Gate (Product Manager / Technical Lead review, criteria A–H) | **PASS** |
-| M0 implementation (generator, PostgreSQL schema, surfaces, sample report) | **Not started.** Scenario Design Gate PASSED — ready for M0 implementation authorization. Implementation proceeds on a fresh branch from post-merge `main`; none of it belongs in the Scenario Contract PR. |
+| M0 implementation (generator, PostgreSQL schema, surfaces, sample report) | **IMPLEMENTATION COMPLETE — READY FOR PM / TECHNICAL LEAD REVIEW.** Implemented on a fresh branch from the post-merge `main`. The M0 completion gate remains with the Product Manager / Technical Lead. |
 
 The agreed process is:
 
@@ -1068,3 +1068,31 @@ target. `load_duckdb.py` is a separate, optional dev/test convenience that
 mirrors the same logical data into a local DuckDB file for fast local
 inspection and for tests that don't need a live PostgreSQL instance; it is
 never Northstar's canonical environment (see §3).
+
+## 15. Implemented M0 usage notes
+
+`generate.py` streams the operational CSVs, bulk-loads a clean PostgreSQL
+target, validates its foreign keys, replays the history by executing the three
+committed operational queries (`scenario/*.sql`: one nightly refresh per run
+date, one Finance close per period, one Board pack run per period at its
+snapshot instant), copies those files verbatim as evidence together with the
+notes and the pack export, attaches comments and job history, and writes the
+hidden QA manifest last. The evidence SQL is therefore the single-run query
+the fictional team runs, not a historical replay script; tests replay one run
+of each and require it to reproduce the stored rows. Existing target schemas are preserved
+by refusing the load; use a new empty disposable database for another run.
+
+`scenario/reconcile.py` independently reconstructs the amounts from database
+evidence and the requested period. It obtains the cutoff from the stored Board
+snapshot and derives credit VAT/original cost from invoice and return lines.
+The separate generator-QA wrapper applies configured materiality thresholds;
+the read-only re-check does not use those thresholds to calculate answers and
+never reads the manifest. Hidden hashes cover every historical reporting row
+and job run, in addition to the explicit August values and bridges.
+
+See the repository [README](../README.md) for exact local PostgreSQL setup,
+generation, offline tests, full acceptance mode and output paths. The one audit
+is committed in Markdown and PDF under `report/samples/`; it is assembled from
+the demo evidence, with tests for all its generated amounts and percentages.
+There is no reusable report engine. PostgreSQL acceptance and the optional
+internal DuckDB mirror exercise the same reporting SQL.

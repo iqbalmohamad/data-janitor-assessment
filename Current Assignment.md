@@ -1,8 +1,8 @@
 # Current Assignment — M0: Reporting Reliability Demo Environment
 
-**Status:** Scenario Design Gate PASSED — ready for M0 implementation
-authorization (Scenario Contract in `benchmark/README.md`, Part II, is
-approved and final; implementation not yet started)
+**Status:** IMPLEMENTATION COMPLETE — READY FOR PM / TECHNICAL LEAD REVIEW
+(Scenario Contract remains approved and final; the M0 completion gate is
+reserved for Product Manager / Technical Lead review.)
 **Milestone:** M0 (revised)
 **Assignment owner:** Technical Lead
 **Canonical seed:** `20260910`
